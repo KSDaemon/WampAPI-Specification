@@ -17,23 +17,19 @@ or through network traffic inspection. When properly defined, a consumer can und
 service with a minimal amount of implementation logic.
 
 A WampAPI definition can then be used by documentation generation tools to display the API, code generation tools to
-generate servers and clients in various programming languages, testing tools, and many other use cases.
+generate clients in various programming languages, testing tools, and many other use cases.
 
 ## Table of Contents
 
-<!-- TOC -->
 
-
-
-<!-- /TOC -->
 
 ## Definitions
 
 ### WampAPI Document
 
 A self-contained or composite resource which defines or describes a Wamp-based API or elements of a Wamp-based API.
-The WampAPI document MUST contain at least one [Wamp URI](#uri-item-object) field and [components](#components) field.
-A WampAPI document uses and conforms to the WampAPI Specification.
+The WampAPI document MUST contain at least one [Wamp URI Action](#uri-action-object) field and
+[components](#Components-Object) field. A WampAPI document uses and conforms to the WampAPI Specification.
 
 ### WAMP Uri Templating
 
@@ -41,11 +37,11 @@ WAMP Uri templating refers to the usage of template expressions, delimited by cu
 of a URI component as replaceable using uri parameters.
 
 Each template expression in the uri MUST correspond to an uri parameter that is included in the
-[WAMP URI Item Object](#Uri-Item-Object) itself. An exception is if the component item is empty, for example
+[WAMP URI Action Object](#uri-action-object) itself. An exception is if the component item is empty, for example
 with pattern-based URIs, matching uri parameters are not required.
 
 The value for these uri parameters MUST NOT contain any unescaped "generic syntax" characters described
-by [RFC3986][RFC3986]: forward slashes (`/`), question marks (`?`), or hashes (`#`).
+by [RFC3986][RFC3986-sec3]: forward slashes (`/`), question marks (`?`), or hashes (`#`).
 
 ## Specification
 
@@ -68,19 +64,11 @@ version of the WAS that it uses.
 A WampAPI document that conforms to the WampAPI Specification is itself a JSON object, which may be represented either
 in JSON or YAML format.
 
-For example, if a field has an array value, the JSON array representation will be used:
-
-```json
-{
-    "field": [ 1, 2, 3 ]
-}
-```
-
 All field names in the specification are **case-sensitive**. This includes all fields that are used as keys in a map,
 except where explicitly noted that keys are **case-insensitive**.
 
-The schema exposes two types of fields: Fixed fields, which have a declared name, and Patterned fields, which declare a
-regex pattern for the field name.
+The schema exposes two types of fields: `Fixed` fields, which have a declared name, and `Patterned` fields, which
+declare a regex pattern for the field name.
 
 Patterned fields MUST have unique names within the containing object.
 
@@ -129,7 +117,6 @@ The formats defined by the WAS are:
 | date        | `string`  | `date`      |                                |
 | dateTime    | `string`  | `date-time` |                                |
 
-
 ### Rich Text Formatting
 
 Throughout the specification `description` fields are noted as supporting CommonMark Markdown formatting.
@@ -143,7 +130,7 @@ Unless specified otherwise, all properties that are URIs MAY be relative referen
 by [RFC3986][RFC3986-sec4.2].
 
 Relative references, including those
-in [Reference Objects](#reference-Object), [Uri Item Object](#uri-item-object) `$ref`
+in [Reference Objects](#reference-Object), [Uri Action Object](#uri-action-object) `$ref`
 fields, [Link Object](#link-Object) `operationRef` fields and [Example Object](#example-Object)
 `externalValue`fields, are resolved using the referring document as the Base URI according
 to [RFC3986][RFC3986-sec5.2].
@@ -176,14 +163,14 @@ This is the root object of the [WampAPI document](#WampAPI-Document).
 
 | Field Name        | Type                                                            | Description                                                                                                                                                                                                                                                                                                                                                                                               |
 |-------------------|-----------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| WampAPI           | `string`                                                        | **REQUIRED**. This string MUST be the [version number](#versions) of the WampAPI Specification that the WampAPI document uses. The `WampAPI` field SHOULD be used by tooling to interpret the WampAPI document. This is *not* related to the API [info.version](#info-Version) string.                                                                                                                    |
+| WampAPI           | `string`                                                        | **REQUIRED**. This string MUST be the [version number](#versions) of the WampAPI Specification that the WampAPI document uses. The `WampAPI` field SHOULD be used by tooling to interpret the WampAPI document. This is *not* related to the API [Info Object](#info-Object) version attribute.                                                                                                           |
 | info              | [Info Object](#info-Object)                                     | **REQUIRED**. Provides metadata about the API. The metadata MAY be used by tooling as required.                                                                                                                                                                                                                                                                                                           |
 | jsonSchemaDialect | `string`                                                        | The default value for the `$schema` keyword within [Schema Objects](#schema-Object) contained within this WAS document. This MUST be in the form of a URI.                                                                                                                                                                                                                                                |
-| servers           | [[Server Object](#server-Object)]                               | An array of Server Objects, which provide connectivity information to a target server. If the `servers` property is not provided, or is an empty array, the default value would be a [Server Object](#server-Object) with a [url](#server-Url) value of `/`.                                                                                                                                              |
-| uris              | [URIs Object](#uris-Object)                                     | The available WAMP URIs and operations for the API.                                                                                                                                                                                                                                                                                                                                                       |
+| servers           | [[Server Object](#server-Object)]                               | An array of Server Objects, which provide connectivity information to a target server(s). If the `servers` property is not provided, or is an empty array, the default value would be a [Server Object](#server-Object) with an `url` value of `/`.                                                                                                                                                       |
+| uris              | [URIs Object](#uris-Object)                                     | The available WAMP URIs Actions within the API.                                                                                                                                                                                                                                                                                                                                                           |
 | components        | [Components Object](#components-Object)                         | An element to hold various schemas for the document.                                                                                                                                                                                                                                                                                                                                                      |
 | security          | [[Security Requirement Object](#security-Requirement-Object)]   | A declaration of which security mechanisms can be used across the API. The list of values includes alternative security requirement objects that can be used. Only one of the security requirement objects need to be satisfied to authorize a request. Individual operations can override this definition. To make security optional, an empty security requirement (`{}`) can be included in the array. |
-| tags              | [[Tag Object](#tag-Object)]                                     | A list of tags used by the document with additional metadata. The order of the tags can be used to reflect on their order by the parsing tools. Not all tags that are used by the [Operation Object](#operation-Object) must be declared. The tags that are not declared MAY be organized randomly or based on the tools' logic. Each tag name in the list MUST be unique.                                |
+| tags              | [[Tag Object](#tag-Object)]                                     | A list of tags used by the document with additional metadata. The order of the tags can be used to reflect on their order by the parsing tools. Not all tags that are used by the [URI Action Object](#uri-action-object) must be declared. The tags that are not declared MAY be organized randomly or based on the tools' logic. Each tag name in the list MUST be unique.                              |
 | externalDocs      | [External Documentation Object](#external-Documentation-Object) | Additional external documentation.                                                                                                                                                                                                                                                                                                                                                                        |
 
 This object MAY be extended with [Specification Extensions](#specification-Extensions).
@@ -204,7 +191,7 @@ convenience.
 | termsOfService | `string`                          | A URL to the Terms of Service for the API. This MUST be in the form of a URL.                                                                                  |
 | contact        | [Contact Object](#contact-Object) | The contact information for the exposed API.                                                                                                                   |
 | license        | [License Object](#license-Object) | The license information for the exposed API.                                                                                                                   |
-| version        | `string`                          | **REQUIRED**. The version of the WampAPI document (which is distinct from the [WampAPI Specification version](#WASVersion) or the API implementation version). |
+| version        | `string`                          | **REQUIRED**. The version of the WampAPI document (which is distinct from the [WampAPI Specification version](#Versions) or the API implementation version).   |
 
 This object MAY be extended with [Specification Extensions](#specification-Extensions).
 
@@ -311,6 +298,7 @@ An object representing a WAMP Server (Router) Connection.
 | Field Name  | Type                                                             | Description                                                                                                                                                                                                                                                                                 |
 |-------------|------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | url         | `string`                                                         | **REQUIRED**. A URL to the target host.  This URL supports Server Variables and MAY be relative, to indicate that the host location is relative to the location where the WampAPI document is being served. Variable substitutions will be made when a variable is named in `{`brackets`}`. |
+| realm       | `string`                                                         | **REQUIRED**. A WAMP Realm to join at the specified URL endpoint. Realm supports user input, so it's value may be omitted in the specification and may be entered by user if document generation tools provide such functionality.                                                          |
 | description | `string`                                                         | An optional string describing the host designated by the URL. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                                                                                                                              |
 | variables   | Map[`string`, [Server Variable Object](#server-Variable-Object)] | A map between a variable name and its value.  The value is used for substitution in the server's URL template.                                                                                                                                                                              |
 
@@ -323,12 +311,14 @@ A single server would be described as:
 ```json
 {
     "url": "https://development.gigantic-server.com/ws/",
+    "realm": "organization_realm",
     "description": "Development server"
 }
 ```
 
 ```yaml
 url: https://development.gigantic-server.com/ws
+realm: organization_realm
 description: Development server
 ```
 
@@ -340,14 +330,17 @@ Object's servers attribute](#WampAPI-Object):
     "servers": [
         {
             "url": "https://development.gigantic-server.com:8080/ws",
+            "realm": "dev",
             "description": "Development server"
         },
         {
             "url": "https://staging.gigantic-server.com/ws",
+            "realm": "stage",
             "description": "Staging server"
         },
         {
             "url": "https://api.gigantic-server.com/ws",
+            "realm": "prod",
             "description": "Production server"
         }
     ]
@@ -357,10 +350,13 @@ Object's servers attribute](#WampAPI-Object):
 ```yaml
 servers:
     -   url: https://development.gigantic-server.com:8080/ws
+        realm: dev
         description: Development server
     -   url: https://staging.gigantic-server.com/ws
+        realm: stage
         description: Staging server
     -   url: https://api.gigantic-server.com/ws
+        realm: prod
         description: Production server
 ```
 
@@ -371,6 +367,7 @@ The following shows how variables can be used for a server configuration:
     "servers": [
         {
             "url": "https://{username}.gigantic-server.com:{port}/{basePath}",
+            "realm": "my-env-realm",
             "description": "The production API server",
             "variables": {
                 "username": {
@@ -396,6 +393,7 @@ The following shows how variables can be used for a server configuration:
 ```yaml
 servers:
     -   url: https://{username}.gigantic-server.com:{port}/{basePath}
+        realm: prod-env-realm
         description: The production API server
         variables:
             username:
@@ -460,7 +458,7 @@ my.org.User
 
 ##### Components Object Example
 
-FIXME: Adopt Components Object Example
+*****FIXME*****: Adopt Components Object Example
 
 ```json
 {
@@ -566,7 +564,7 @@ FIXME: Adopt Components Object Example
 }
 ```
 
-FIXME: Adopt Components Object Example
+*****FIXME*****: Adopt Components Object Example
 
 ```yaml
 components:
@@ -640,12 +638,12 @@ components:
 
 #### URIs Object
 
-Holds the WAMP URIs of topics and RPCs and their operations.
+Holds the WAMP URIs of topics and RPCs and their actions.
 The URIs MAY be empty, due to [Access Control List (ACL) constraints](#security-Filtering).
 
-##### Patterned URI components
+##### Patterned URI Actions
 
-WAMP URI may include parameterized components based on [WAMP Uri Templating](#WAMP-Uri-Templating).
+WAMP URI Action may include parameterized URI components based on [WAMP Uri Templating](#WAMP-Uri-Templating).
 When matching URIs, concrete (non-templated) components would be matched before their templated counterparts. Templated
 components with the same hierarchy but different templated names MUST NOT exist as they are identical. In case of
 ambiguous matching, it's up to the tooling to decide which one to use.
@@ -654,7 +652,7 @@ This object MAY be extended with [Specification Extensions](#specification-Exten
 
 ##### Uri templating Matching
 
-Assuming the following uris, the concrete definition, `pets.mine`, will be matched first if used:
+Assuming the following uris, the concrete definition, `com.store.pets.mine`, will be matched first if used:
 
 ```
   com.store.pets.{petId}
@@ -677,7 +675,8 @@ The following may lead to ambiguous resolution:
 
 ##### URIs Object Example
 
-FIXME: adopt URIs Object Example
+*****FIXME*****: adopt URIs Object Example
+
 ```json
 {
     "com.store.pets.get": {
@@ -718,134 +717,34 @@ com.store.pets.get:
                                 $ref: '#/components/schemas/pet'
 ```
 
-#### URI Item Object
+#### URI Action Object
 
-Describes the single operation on a WAMP URI.
-
-##### Fixed Fields
-
-| Field Name   | Type                                                                             | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-|--------------|----------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| type         | `string`. ENUM: ["topic", "rpc"]                                                 | **REQUIRED**. The type of WAMP URI. This defines how to work with this URI: make a call or publish/subscribe.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| summary      | `string`                                                                         | A short summary of what the operation does.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| description  | `string`                                                                         | A verbose explanation of the operation behavior. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| externalDocs | [External Documentation Object](#external-Documentation-Object)                  | Additional external documentation for this operation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| parameters   | [[Parameter Object](#parameter-Object) or [Reference Object](#reference-Object)] | A list of parameters that are applicable for this operation. If a parameter is already defined at the [Path Item](#UriItemParameters), the new definition will override it but can never remove it. The list MUST NOT include duplicated parameters. A unique parameter is defined by a combination of a [name](#parameterName) and [location](#parameterIn). The list can use the [Reference Object](#reference-Object) to link to parameters that are defined at the [WampAPI Object's components/parameters](#componentsParameters).                                                                     |
-| request      | [Request Object](#request-Object) or [Reference Object](#reference-Object)       | The request body applicable for this operation.  The `requestBody` is fully supported in HTTP methods where the HTTP 1.1 specification [RFC7231](https://tools.ietf.org/html/rfc7231#section-4.3.1) has explicitly defined semantics for request bodies.  In other cases where the HTTP spec is vague (such as [GET](https://tools.ietf.org/html/rfc7231#section-4.3.1), [HEAD](https://tools.ietf.org/html/rfc7231#section-4.3.2) and [DELETE](https://tools.ietf.org/html/rfc7231#section-4.3.5)), `requestBody` is permitted but does not have well-defined semantics and SHOULD be avoided if possible. |
-| response     | [Response Object](#response-Object)                                              | The list of possible responses as they are returned from executing this operation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
-| errors       | [[Error Object](#error-Object)]                                                  | A declaration of which security mechanisms can be used for this operation. The list of values includes alternative security requirement objects that can be used. Only one of the security requirement objects need to be satisfied to authorize a request. To make security optional, an empty security requirement (`{}`) can be included in the array. This definition overrides any declared top-level [security](#WASSecurity). To remove a top-level security declaration, an empty array can be used.                                                                                                |
-| security     | [[Security Requirement Object](#securityRequirementObject)]                      | A declaration of which security mechanisms can be used for this operation. The list of values includes alternative security requirement objects that can be used. Only one of the security requirement objects need to be satisfied to authorize a request. To make security optional, an empty security requirement (`{}`) can be included in the array. This definition overrides any declared top-level [security](#WASSecurity). To remove a top-level security declaration, an empty array can be used.                                                                                                |
-
-This object MAY be extended with [Specification Extensions](#specification-Extensions).
-
-##### URI Item Object Example
-
-```json
-{
-    "get": {
-        "description": "Returns pets based on ID",
-        "summary": "Find pets by ID",
-        "operationId": "getPetsById",
-        "responses": {
-            "200": {
-                "description": "pet response",
-                "content": {
-                    "*/*": {
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/components/schemas/Pet"
-                            }
-                        }
-                    }
-                }
-            },
-            "default": {
-                "description": "error payload",
-                "content": {
-                    "text/html": {
-                        "schema": {
-                            "$ref": "#/components/schemas/ErrorModel"
-                        }
-                    }
-                }
-            }
-        }
-    },
-    "parameters": [
-        {
-            "name": "id",
-            "in": "path",
-            "description": "ID of pet to use",
-            "required": true,
-            "schema": {
-                "type": "array",
-                "items": {
-                    "type": "string"
-                }
-            },
-            "style": "simple"
-        }
-    ]
-}
-```
-
-```yaml
-get:
-    description: Returns pets based on ID
-    summary: Find pets by ID
-    operationId: getPetsById
-    responses:
-        '200':
-            description: pet response
-            content:
-                '*/*':
-                    schema:
-                        type: array
-                        items:
-                            $ref: '#/components/schemas/Pet'
-        default:
-            description: error payload
-            content:
-                'text/html':
-                    schema:
-                        $ref: '#/components/schemas/ErrorModel'
-parameters:
-    -   name: id
-        in: path
-        description: ID of pet to use
-        required: true
-        schema:
-            type: array
-            items:
-                type: string
-        style: simple
-```
-
-#### Operation Object
-
-Describes a single API operation on a path.
+Describes the single action on a WAMP URI.
 
 ##### Fixed Fields
 
- Field Name                                       |                             Type                              | Description
---------------------------------------------------|-------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- tags                 |                          [string]                           | A list of tags for API documentation control. Tags can be used for logical grouping of operations by resources or any other qualifier.
- summary           |                           `string`                            | A short summary of what the operation does.
- description   |                           `string`                            | A verbose explanation of the operation behavior. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.
- externalDocs | [External Documentation Object](#external-Documentation-Object) | Additional external documentation for this operation.
- operationId            |                           `string`                            | Unique string used to identify the operation. The id MUST be unique among all operations described in the API. The operationId value is **case-sensitive**. Tools and libraries MAY use the operationId to uniquely identify an operation, therefore, it is RECOMMENDED to follow common programming naming conventions.
- parameters     |            [[Parameter Object](#parameter-Object) \            | [Reference Object](#reference-Object)]                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | A list of parameters that are applicable for this operation. If a parameter is already defined at the [Path Item](#UriItemParameters), the new definition will override it but can never remove it. The list MUST NOT include duplicated parameters. A unique parameter is defined by a combination of a [name](#parameterName) and [location](#parameterIn). The list can use the [Reference Object](#reference-Object) to link to parameters that are defined at the [WampAPI Object's components/parameters](#componentsParameters).
- requestBody   |          [Request Object](#request-Payload-Object) \          | [Reference Object](#reference-Object)                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | The request body applicable for this operation.  The `requestBody` is fully supported in HTTP methods where the HTTP 1.1 specification [RFC7231](https://tools.ietf.org/html/rfc7231#section-4.3.1) has explicitly defined semantics for request bodies.  In other cases where the HTTP spec is vague (such as [GET](https://tools.ietf.org/html/rfc7231#section-4.3.1), [HEAD](https://tools.ietf.org/html/rfc7231#section-4.3.2) and [DELETE](https://tools.ietf.org/html/rfc7231#section-4.3.5)), `requestBody` is permitted but does not have well-defined semantics and SHOULD be avoided if possible.
- responses       |             [Responses Object](#responsesObject)              | The list of possible responses as they are returned from executing this operation.
- callbacks       |      Map[`string`, [Callback Object](#callbackObject) \       | [Reference Object](#reference-Object)]                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | A map of possible out-of band callbacks related to the parent operation. The key is a unique identifier for the Callback Object. Each value in the map is a [Callback Object](#callbackObject) that describes a request that may be initiated by the API provider and the expected responses.
- deprecated     |                           `boolean`                           | Declares this operation to be deprecated. Consumers SHOULD refrain from usage of the declared operation. Default value is `false`.
- security         |  [[Security Requirement Object](#securityRequirementObject)]  | A declaration of which security mechanisms can be used for this operation. The list of values includes alternative security requirement objects that can be used. Only one of the security requirement objects need to be satisfied to authorize a request. To make security optional, an empty security requirement (`{}`) can be included in the array. This definition overrides any declared top-level [security](#WASSecurity). To remove a top-level security declaration, an empty array can be used.
- servers           |               [[Server Object](#server-Object)]                | An alternative `server` array to service this operation. If an alternative `server` object is specified at the Path Item Object or Root level, it will be overridden by this value.
+| Field Name                 | Type                                                                             | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+|----------------------------|----------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| type                       | `string`. ENUM: ["topic", "rpc"]                                                 | **REQUIRED**. The type of WAMP URI. This defines how to work with this URI: make a call or publish/subscribe.                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| summary                    | `string`                                                                         | A short summary of what the operation does.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| description                | `string`                                                                         | A verbose explanation of the operation behavior. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                                                                                                                                                                                                                                                                                                                                                                                |
+| tags                       | [string]                                                                         | A list of tags for API documentation control. Tags can be used for logical grouping of actions by resources or any other qualifier.                                                                                                                                                                                                                                                                                                                                                                                              |
+| deprecated                 | `boolean`                                                                        | Declares this action to be deprecated. Consumers SHOULD refrain from usage of the declared action. Default value is `false`.                                                                                                                                                                                                                                                                                                                                                                                                     |
+| externalDocs               | [External Documentation Object](#external-Documentation-Object)                  | Additional external documentation for this operation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| parameters                 | [[Parameter Object](#parameter-Object) or [Reference Object](#reference-Object)] | A list of parameters that are applicable for this operation. The list MUST NOT include duplicated parameters. A unique parameter is defined by a name. The list can use the [Reference Object](#reference-Object) to link to parameters that are defined at the [WampAPI Object's components](#Components-Object) `parameters`.                                                                                                                                                                                                  |
+| request                    | [Request Object](#request-Object) or [Reference Object](#reference-Object)       | The request payload applicable for this operation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| response                   | [Response Object](#response-Object)                                              | The list of possible responses as they are returned from executing this action.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| errors                     | [[Error Object](#error-Object)]                                                  | The list of possible errored responses that can be thrown during executing this action.                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| security                   | [[Security Requirement Object](#security-Requirement-Object)]                    | A declaration of which security mechanisms can be used for this operation. The list of values includes alternative security requirement objects that can be used. Only one of the security requirement objects need to be satisfied to authorize a request. To make security optional, an empty security requirement (`{}`) can be included in the array. This definition overrides any declared top-level [WampAPI Object](#WampAPI-Object) `security`. To remove a top-level security declaration, an empty array can be used. |
+| supportsProgressiveCalls   | `boolean`                                                                        | Only for RPCs. Determines if the RPC supports `Progressive calls` Advanced Profile WAMP Feature. Defaults to `false`.                                                                                                                                                                                                                                                                                                                                                                                                            |
+| supportsProgressiveResults | `boolean`                                                                        | Only for RPCs. Determines if the RPC supports `Progressive call results` Advanced Profile WAMP Feature. Defaults to `false`.                                                                                                                                                                                                                                                                                                                                                                                                     |
+| supportsE2EE               | `boolean`                                                                        | Determines if the URI Action (RPC or events topic) supports `End-2-End Encryption` Advanced Profile WAMP Feature. Defaults to `false`.                                                                                                                                                                                                                                                                                                                                                                                           |
 
 This object MAY be extended with [Specification Extensions](#specification-Extensions).
 
-##### Operation Object Example
+##### URI Action Example
+
+*****FIXME*****: adopt URI Action Example
 
 ```json
 {
@@ -963,10 +862,10 @@ Allows referencing an external resource for extended documentation.
 
 ##### Fixed Fields
 
- Field Name                                       |   Type   | Description
---------------------------------------------------|--------|----------------------------------------------------------------------------------------------------------------------------------------
- description | `string` | A description of the target documentation. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.
- url                 | `string` | **REQUIRED**. The URL for the target documentation. This MUST be in the form of a URL.
+| Field Name  | Type     | Description                                                                                                                 |
+|-------------|----------|-----------------------------------------------------------------------------------------------------------------------------|
+| description | `string` | A description of the target documentation. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation. |
+| url         | `string` | **REQUIRED**. The URL for the target documentation. This MUST be in the form of a URL.                                      |
 
 This object MAY be extended with [Specification Extensions](#specification-Extensions).
 
@@ -986,97 +885,14 @@ url: https://example.com
 
 #### Parameter Object
 
-Describes a single operation parameter.
-
-A unique parameter is defined by a combination of a [name](#parameterName) and [location](#parameterIn).
-
-##### Parameter Locations
-
-There are four possible parameter locations specified by the `in` field:
-
-* path - Used together with [Uri templating](#pathTemplating), where the parameter value is actually part of the
-  operation's URL. This does not include the host or base path of the API. For example, in `/items/{itemId}`, the path
-  parameter is `itemId`.
-* query - Parameters that are appended to the URL. For example, in `/items?id=###`, the query parameter is `id`.
-* header - Custom headers that are expected as part of the request. Note
-  that [RFC7230](https://tools.ietf.org/html/rfc7230#page-22) states header names are case insensitive.
-* cookie - Used to pass a specific cookie value to the API.
+Describes a single action URI component parameter.
 
 ##### Fixed Fields
 
- Field Name                                              |   Type    | Description
----------------------------------------------------------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- name                        | `string`  | **REQUIRED**. The name of the parameter. Parameter names are *case sensitive*. <ul><li>If [in](#parameterIn) is `"path"`, the `name` field MUST correspond to a template expression occurring within the [path](#pathsPath) field in the [URIs Object](#uris-Object). See [Uri templating](#pathTemplating) for further information.<li>If [in](#parameterIn) is `"header"` and the `name` field is `"Accept"`, `"Content-Type"` or `"Authorization"`, the parameter definition SHALL be ignored.<li>For all other cases, the `name` corresponds to the parameter name used by the [in](#parameterIn) property.</ul>
- in                            | `string`  | **REQUIRED**. The location of the parameter. Possible values are `"query"`, `"header"`, `"path"` or `"cookie"`.
- description          | `string`  | A brief description of the parameter. This could contain examples of use. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.
- required                | `boolean` | Determines whether this parameter is mandatory. If the [parameter location](#parameterIn) is `"path"`, this property is **REQUIRED** and its value MUST be `true`. Otherwise, the property MAY be included and its default value is `false`.
-  deprecated           | `boolean` | Specifies that a parameter is deprecated and SHOULD be transitioned out of usage. Default value is `false`.
-  allowEmptyValue | `boolean` | Sets the ability to pass empty-valued parameters. This is valid only for `query` parameters and allows sending a parameter with an empty value. Default value is `false`. If [style](#parameterStyle) is used, and if behavior is `n/a` (cannot be serialized), the value of `allowEmptyValue` SHALL be ignored. Use of this property is NOT RECOMMENDED, as it is likely to be removed in a later revision.
-
-The rules for serialization of the parameter are specified in one of two ways.
-For simpler scenarios, a [schema](#parameterSchema) and [style](#parameterStyle) can describe the structure and
-syntax of the parameter.
-
- Field Name                                         |                       Type                        | Description
-----------------------------------------------------|-------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- style                 |                     `string`                      | Describes how the parameter value will be serialized depending on the type of the parameter value. Default values (based on value of `in`): for `query` - `form`; for `path` - `simple`; for `header` - `simple`; for `cookie` - `form`.
- explode             |                     `boolean`                     | When this is true, parameter values of type `array` or `object` generate separate parameters for each value of the array or key-value pair of the map. For other types of parameters this property has no effect. When [style](#parameterStyle) is `form`, the default value is `true`. For all other styles, the default value is `false`.
- allowReserved |                     `boolean`                     | Determines whether the parameter value SHOULD allow reserved characters, as defined by [RFC3986](https://tools.ietf.org/html/rfc3986#section-2.2) `:/?#[]@!$&'()*+,;=` to be included without percent-encoding. This property only applies to parameters with an `in` value of `query`. The default value is `false`.
- schema               |          [Schema Object](#schema-Object)           | The schema defining the type used for the parameter.
- example             |                        Any                        | Example of the parameter's potential value. The example SHOULD match the specified schema and encoding properties if present. The `example` field is mutually exclusive of the `examples` field. Furthermore, if referencing a `schema` that contains an example, the `example` value SHALL _override_ the example provided by the schema. To represent examples of media types that cannot naturally be represented in JSON or YAML, a string value can contain the example with escaping where necessary.
- examples           | Map[ `string`, [Example Object](#example-Object) \ | [Reference Object](#reference-Object)]                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Examples of the parameter's potential value. Each example SHOULD contain a value in the correct format as specified in the parameter encoding. The `examples` field is mutually exclusive of the `example` field. Furthermore, if referencing a `schema` that contains an example, the `examples` value SHALL _override_ the example provided by the schema.
-
-For more complex scenarios, the [content](#parameterContent) property can define the media type and schema of the
-parameter.
-A parameter MUST contain either a `schema` property, or a `content` property, but not both.
-When `example` or `examples` are provided in conjunction with the `schema` object, the example MUST follow the
-prescribed serialization strategy for the parameter.
-
- Field Name                             |                         Type                         | Description
-----------------------------------------|----------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------
- content | Map[`string`, [Media Type Object](#mediaTypeObject)] | A map containing the representations for the parameter. The key is the media type and the value describes it. The map MUST only contain one entry.
-
-##### Style Values
-
-In order to support common ways of serializing simple parameters, a set of `style` values are defined.
-
- `style`        | [type](#dataTypes)           | `in`              | Comments
-----------------|--------------------------------|-------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- matrix         | `primitive`, `array`, `object` | `path`            | Path-style parameters defined by [RFC6570](https://tools.ietf.org/html/rfc6570#section-3.2.7)
- label          | `primitive`, `array`, `object` | `path`            | Label style parameters defined by [RFC6570](https://tools.ietf.org/html/rfc6570#section-3.2.5)
- form           | `primitive`, `array`, `object` | `query`, `cookie` | Form style parameters defined by [RFC6570](https://tools.ietf.org/html/rfc6570#section-3.2.8). This option replaces `collectionFormat` with a `csv` (when `explode` is false) or `multi` (when `explode` is true) value from WampAPI 2.0.
- simple         | `array`                        | `path`, `header`  | Simple style parameters defined by [RFC6570](https://tools.ietf.org/html/rfc6570#section-3.2.2).  This option replaces `collectionFormat` with a `csv` value from WampAPI 2.0.
- spaceDelimited | `array`, `object`              | `query`           | Space separated array or object values. This option replaces `collectionFormat` equal to `ssv` from WampAPI 2.0.
- pipeDelimited  | `array`, `object`              | `query`           | Pipe separated array or object values. This option replaces `collectionFormat` equal to `pipes` from WampAPI 2.0.
- deepObject     | `object`                       | `query`           | Provides a simple way of rendering nested objects using form parameters.
-
-##### Style Examples
-
-Assume a parameter named `color` has one of the following values:
-
-```
-   string -> "blue"
-   array -> ["blue","black","brown"]
-   object -> { "R": 100, "G": 200, "B": 150 }
-```
-
-The following table shows examples of rendering differences for each value.
-
- [style](#styleValues) | `explode` | `empty` | `string`    | `array`                             | `object`
--------------------------|-----------|---------|-------------|-------------------------------------|----------------------------------------
- matrix                  | false     | ;color  | ;color=blue | ;color=blue,black,brown             | ;color=R,100,G,200,B,150
- matrix                  | true      | ;color  | ;color=blue | ;color=blue;color=black;color=brown | ;R=100;G=200;B=150
- label                   | false     | .       | .blue       | .blue.black.brown                   | .R.100.G.200.B.150
- label                   | true      | .       | .blue       | .blue.black.brown                   | .R=100.G=200.B=150
- form                    | false     | color=  | color=blue  | color=blue,black,brown              | color=R,100,G,200,B,150
- form                    | true      | color=  | color=blue  | color=blue&color=black&color=brown  | R=100&G=200&B=150
- simple                  | false     | n/a     | blue        | blue,black,brown                    | R,100,G,200,B,150
- simple                  | true      | n/a     | blue        | blue,black,brown                    | R=100,G=200,B=150
- spaceDelimited          | false     | n/a     | n/a         | blue%20black%20brown                | R%20100%20G%20200%20B%20150
- pipeDelimited           | false     | n/a     | n/a         | blue\                               | black\                                 |brown | R\|100\|G\|200\|B\|150
- deepObject              | true      | n/a     | n/a         | n/a                                 | color[R]=100&color[G]=200&color[B]=150
-
-This object MAY be extended with [Specification Extensions](#specification-Extensions).
+| Field Name      | Type      | Description                                                                                                                                                                                                                                                                                                                                                                                                  |
+|-----------------|-----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| name            | `string`  | **REQUIRED**. The name of the parameter. Parameter names are *case sensitive*. The `name` field MUST correspond to a template expression occurring within the action URI String. See [Uri templating](#WAMP-Uri-Templating) for further information.                                                                                                                                                         |
+| description     | `string`  | A brief description of the parameter. This could contain examples of use. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                                                                                                                                                                                                                                   |
 
 ##### Parameter Object Examples
 
@@ -1084,175 +900,32 @@ A header parameter with an array of 64 bit integer numbers:
 
 ```json
 {
-    "name": "token",
-    "in": "header",
-    "description": "token to be passed as a header",
-    "required": true,
-    "schema": {
-        "type": "array",
-        "items": {
-            "type": "integer",
-            "format": "int64"
-        }
-    },
-    "style": "simple"
+    "name": "catalogue-section",
+    "description": "A catalog section name"
 }
 ```
 
 ```yaml
-name: token
-in: header
-description: token to be passed as a header
-required: true
-schema:
-    type: array
-    items:
-        type: integer
-        format: int64
-style: simple
+name: catalogue-section
+description: A catalog section name
 ```
 
-A uri parameter of a string value:
+#### Request Object
 
-```json
-{
-    "name": "username",
-    "in": "path",
-    "description": "username to fetch",
-    "required": true,
-    "schema": {
-        "type": "string"
-    }
-}
-```
-
-```yaml
-name: username
-in: path
-description: username to fetch
-required: true
-schema:
-    type: string
-```
-
-An optional query parameter of a string value, allowing multiple values by repeating the query parameter:
-
-```json
-{
-    "name": "id",
-    "in": "query",
-    "description": "ID of the object to fetch",
-    "required": false,
-    "schema": {
-        "type": "array",
-        "items": {
-            "type": "string"
-        }
-    },
-    "style": "form",
-    "explode": true
-}
-```
-
-```yaml
-name: id
-in: query
-description: ID of the object to fetch
-required: false
-schema:
-    type: array
-    items:
-        type: string
-style: form
-explode: true
-```
-
-A free-form query parameter, allowing undefined parameters of a specific type:
-
-```json
-{
-    "in": "query",
-    "name": "freeForm",
-    "schema": {
-        "type": "object",
-        "additionalProperties": {
-            "type": "integer"
-        }
-    },
-    "style": "form"
-}
-```
-
-```yaml
-in: query
-name: freeForm
-schema:
-    type: object
-    additionalProperties:
-        type: integer
-style: form
-```
-
-A complex parameter using `content` to define serialization:
-
-```json
-{
-    "in": "query",
-    "name": "coordinates",
-    "content": {
-        "application/json": {
-            "schema": {
-                "type": "object",
-                "required": [
-                    "lat",
-                    "long"
-                ],
-                "properties": {
-                    "lat": {
-                        "type": "number"
-                    },
-                    "long": {
-                        "type": "number"
-                    }
-                }
-            }
-        }
-    }
-}
-```
-
-```yaml
-in: query
-name: coordinates
-content:
-    application/json:
-        schema:
-            type: object
-            required:
-                - lat
-                - long
-            properties:
-                lat:
-                    type: number
-                long:
-                    type: number
-```
-
-#### Request Body Object
-
-Describes a single request body.
+Describes a single request payload.
 
 ##### Fixed Fields
 
- Field Name                                       |                         Type                         | Description
---------------------------------------------------|----------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- description |                       `string`                       | A brief description of the request body. This could contain examples of use.  [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.
- content         | Map[`string`, [Media Type Object](#mediaTypeObject)] | **REQUIRED**. The content of the request body. The key is a media type or [media type range](https://tools.ietf.org/html/rfc7231#appendix-D) and the value describes it.  For requests that match multiple keys, only the most specific key is applicable. e.g. text/plain overrides text/*
- required       |                      `boolean`                       | Determines if the request body is required in the request. Defaults to `false`.
+| Field Name          | Type               | Description                                                                                                                                                                                                                                   |
+|---------------------|--------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| description         | `string`           | A brief description of the request payload. This could contain examples of use.  [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                                                             |
+| args                | [any]              | The contents of WAMP Message `Arguments list`. This MUST be an array with any number of items (0, 1 or more). In case when `ArgumentsKw dict` is declared, but `Arguments list` is omitted, empty array `[]` will be sent as `Arguments list` |
+| kwargs              | Map[`string`, any] | The contents of WAMP Message `ArgumentsKw dict`. This MUST be an object with any number of `string` keys.                                                                                                                                     |
+| required            | `boolean`          | Determines if the request payload is required for the action. Defaults to `false`.                                                                                                                                                            |
 
-This object MAY be extended with [Specification Extensions](#specification-Extensions).
+At least one of the `args`, `kwargs` MUST be defined.
 
-##### Request Body Examples
+##### Request Examples
 
 A request body with a referenced model definition.
 
@@ -1361,82 +1034,6 @@ content:
                 type: string
 ```
 
-#### Media Type Object
-
-Each Media Type Object provides schema and examples for the media type identified by its key.
-
-##### Fixed Fields
-
- Field Name                               |                       Type                        | Description
-------------------------------------------|-------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- schema     |          [Schema Object](#schema-Object)           | The schema defining the content of the request, response, or parameter.
- example   |                        Any                        | Example of the media type.  The example object SHOULD be in the correct format as specified by the media type.  The `example` field is mutually exclusive of the `examples` field.  Furthermore, if referencing a `schema` which contains an example, the `example` value SHALL _override_ the example provided by the schema.
- examples | Map[ `string`, [Example Object](#example-Object) \ | [Reference Object](#reference-Object)]                                                                                                                                                                                                                                                                                          | Examples of the media type.  Each example object SHOULD  match the media type and specified schema if present.  The `examples` field is mutually exclusive of the `example` field.  Furthermore, if referencing a `schema` which contains an example, the `examples` value SHALL _override_ the example provided by the schema.
- encoding | Map[`string`, [Encoding Object](#encodingObject)] | A map between a property name and its encoding information. The key, being the property name, MUST exist in the schema as a property. The encoding object SHALL only apply to `requestBody` objects when the media type is `multipart` or `application/x-www-form-urlencoded`.
-
-This object MAY be extended with [Specification Extensions](#specification-Extensions).
-
-##### Media Type Examples
-
-```json
-{
-    "application/json": {
-        "schema": {
-            "$ref": "#/components/schemas/Pet"
-        },
-        "examples": {
-            "cat": {
-                "summary": "An example of a cat",
-                "value": {
-                    "name": "Fluffy",
-                    "petType": "Cat",
-                    "color": "White",
-                    "gender": "male",
-                    "breed": "Persian"
-                }
-            },
-            "dog": {
-                "summary": "An example of a dog with a cat's name",
-                "value": {
-                    "name": "Puma",
-                    "petType": "Dog",
-                    "color": "Black",
-                    "gender": "Female",
-                    "breed": "Mixed"
-                },
-                "frog": {
-                    "$ref": "#/components/examples/frog-example"
-                }
-            }
-        }
-    }
-}
-```
-
-```yaml
-application/json:
-    schema:
-        $ref: "#/components/schemas/Pet"
-    examples:
-        cat:
-            summary: An example of a cat
-            value:
-                name: Fluffy
-                petType: Cat
-                color: White
-                gender: male
-                breed: Persian
-        dog:
-            summary: An example of a dog with a cat's name
-            value:
-                name: Puma
-                petType: Dog
-                color: Black
-                gender: Female
-                breed: Mixed
-        frog:
-            $ref: "#/components/examples/frog-example"
-```
 
 ##### Considerations for File Uploads
 
@@ -1884,7 +1481,7 @@ description: object created
 #### Callback Object
 
 A map of possible out-of band callbacks related to the parent operation.
-Each value in the map is a [WAMP URI Item Object](#Uri-Item-Object) that describes a set of requests that may be initiated by
+Each value in the map is a [WAMP URI Item Object](#uri-action-object) that describes a set of requests that may be initiated by
 the API provider and the expected responses.
 The key value used to identify the path item object is an expression, evaluated at runtime, that identifies a URL to use
 for the callback operation.
@@ -1893,13 +1490,13 @@ for the callback operation.
 
  Field Pattern                                 |                 Type                  | Description
 -----------------------------------------------|-------------------------------------|--------------------------------------
- {expression} | [WAMP URI Item Object](#Uri-Item-Object) \ | [Reference Object](#reference-Object) | A Path Item Object, or a reference to one, used to define a callback request and expected responses.  A [complete example](../examples/v3.0/callback-example.yaml) is available.
+ {expression} | [WAMP URI Item Object](#uri-action-object) \ | [Reference Object](#reference-Object) | A Path Item Object, or a reference to one, used to define a callback request and expected responses.  A [complete example](../examples/v3.0/callback-example.yaml) is available.
 
 This object MAY be extended with [Specification Extensions](#specification-Extensions).
 
 ##### Key Expression
 
-The key that identifies the [WAMP URI Item Object](#Uri-Item-Object) is a [runtime expression](#runtimeExpression) that can
+The key that identifies the [WAMP URI Item Object](#uri-action-object) is a [runtime expression](#runtimeExpression) that can
 be evaluated in the context of a runtime HTTP request/response to identify the URL to be used for the callback request.
 A simple example might be `$request.body#/url`.
 However, using a [runtime expression](#runtimeExpression) the complete HTTP message can be accessed.
@@ -3556,7 +3153,7 @@ Two examples of this:
 1. The [URIs Object](#uris-Object) MAY be present but empty. It may be counterintuitive, but this may tell the viewer
    that they got to the right place, but can't access any documentation. They would still have access to at least
    the [Info Object](#info-Object) which may contain additional information regarding authentication.
-2. The [WAMP URI Item Object](#Uri-Item-Object) MAY be empty. In this case, the viewer will be aware that the path exists,
+2. The [WAMP URI Item Object](#uri-action-object) MAY be empty. In this case, the viewer will be aware that the path exists,
    but will not be able to see any of its operations or parameters. This is different from hiding the path itself from
    the [URIs Object](#uris-Object), because the user will be aware of its existence. This allows the documentation
    provider to finely control what the viewer can see.
@@ -3566,7 +3163,7 @@ Two examples of this:
 [BCP-14]: https://tools.ietf.org/html/bcp14
 [RFC2119]: https://tools.ietf.org/html/rfc2119
 [RFC8174]: https://tools.ietf.org/html/rfc8174
-[RFC3986]: https://tools.ietf.org/html/rfc3986#section-3
+[RFC3986-sec3]: https://tools.ietf.org/html/rfc3986#section-3
 [RFC3986-sec4.2]: https://tools.ietf.org/html/rfc3986#section-4.2
 [RFC3986-sec5.1]: https://tools.ietf.org/html/rfc3986#section-5.1
 [RFC3986-sec5.2]: https://tools.ietf.org/html/rfc3986#section-5.2
