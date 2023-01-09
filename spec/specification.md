@@ -28,8 +28,9 @@ generate clients in various programming languages, testing tools, and many other
 ### WampAPI Document
 
 A self-contained or composite resource which defines or describes a Wamp-based API or elements of a Wamp-based API.
-The WampAPI document MUST contain at least one [Wamp URI Action](#uri-action-object) field and
-[components](#Components-Object) field. A WampAPI document uses and conforms to the WampAPI Specification.
+The WampAPI document MUST contain at least one [WAMP URI RPC Action](#uri-rpc-action-object) or
+[WAMP URI Topic Action](#uri-topic-action-object) field and [components](#Components-Object) field. A WampAPI document
+uses and conforms to the WampAPI Specification.
 
 ### WAMP Uri Templating
 
@@ -37,8 +38,9 @@ WAMP Uri templating refers to the usage of template expressions, delimited by cu
 of a URI component as replaceable using uri parameters.
 
 Each template expression in the uri MUST correspond to an uri parameter that is included in the
-[WAMP URI Action Object](#uri-action-object) itself. An exception is if the component item is empty, for example
-with pattern-based URIs, matching uri parameters are not required.
+[WAMP URI RPC Action Object](#uri-rpc-action-object) or [WAMP URI Topic Action Object](#uri-topic-action-object)
+itself. An exception is if the component item is empty, for example with pattern-based URIs, matching uri parameters
+are not required.
 
 The value for these uri parameters MUST NOT contain any unescaped "generic syntax" characters described
 by [RFC3986][RFC3986-sec3]: forward slashes (`/`), question marks (`?`), or hashes (`#`).
@@ -130,10 +132,10 @@ Unless specified otherwise, all properties that are URIs MAY be relative referen
 by [RFC3986][RFC3986-sec4.2].
 
 Relative references, including those
-in [Reference Objects](#reference-Object), [Uri Action Object](#uri-action-object) `$ref`
-fields, [Link Object](#link-Object) `operationRef` fields and [Example Object](#example-Object)
-`externalValue`fields, are resolved using the referring document as the Base URI according
-to [RFC3986][RFC3986-sec5.2].
+in [Reference Objects](#reference-Object), [Uri RPC Action Object](#uri-rpc-action-object) `$ref`
+fields, [Uri Topic Action Object](#uri-topic-action-object) `$ref` fields, [Link Object](#link-Object) `operationRef`
+fields and [Example Object](#example-Object) `externalValue`fields, are resolved using the referring document as the
+Base URI according to [RFC3986][RFC3986-sec5.2].
 
 If a URI contains a fragment identifier, then the fragment should be resolved per the fragment resolution mechanism of
 the referenced document. If the representation of the referenced document is JSON or YAML, then the fragment identifier
@@ -170,7 +172,7 @@ This is the root object of the [WampAPI document](#WampAPI-Document).
 | uris              | [URIs Object](#uris-Object)                                     | The available WAMP URIs Actions within the API.                                                                                                                                                                                                                                                                                                                                                           |
 | components        | [Components Object](#components-Object)                         | An element to hold various schemas for the document.                                                                                                                                                                                                                                                                                                                                                      |
 | security          | [[Security Requirement Object](#security-Requirement-Object)]   | A declaration of which security mechanisms can be used across the API. The list of values includes alternative security requirement objects that can be used. Only one of the security requirement objects need to be satisfied to authorize a request. Individual operations can override this definition. To make security optional, an empty security requirement (`{}`) can be included in the array. |
-| tags              | [[Tag Object](#tag-Object)]                                     | A list of tags used by the document with additional metadata. The order of the tags can be used to reflect on their order by the parsing tools. Not all tags that are used by the [URI Action Object](#uri-action-object) must be declared. The tags that are not declared MAY be organized randomly or based on the tools' logic. Each tag name in the list MUST be unique.                              |
+| tags              | [[Tag Object](#tag-Object)]                                     | A list of tags used by the document with additional metadata. The order of the tags can be used to reflect on their order by the parsing tools. Not all tags that are used by the URI Action Object must be declared. The tags that are not declared MAY be organized randomly or based on the tools' logic. Each tag name in the list MUST be unique.                                                    |
 | externalDocs      | [External Documentation Object](#external-Documentation-Object) | Additional external documentation.                                                                                                                                                                                                                                                                                                                                                                        |
 
 This object MAY be extended with [Specification Extensions](#specification-Extensions).
@@ -437,6 +439,7 @@ will have no effect on the API unless they are explicitly referenced from proper
 | parameters      | Map[`string`, [Parameter Object](#parameter-Object) or [Reference Object](#reference-Object)]             | An object to hold reusable [Parameter Objects](#parameter-Object)             |
 | requests        | Map[`string`, [Request Object](#request-Object) or [Reference Object](#reference-Object)]                 | An object to hold reusable [Request Objects](#request-Object)                 |
 | responses       | Map[`string`, [Response Object](#response-Object) or [Reference Object](#reference-Object)]               | An object to hold reusable [Response Objects](#response-Object)               |
+| events          | Map[`string`, [Event Object](#event-Object) or [Reference Object](#reference-Object)]                     | An object to hold reusable [Event Objects](#event-Object)                     |
 | examples        | Map[`string`, [Example Object](#example-Object) or [Reference Object](#reference-Object)]                 | An object to hold reusable [Example Objects](#example-Object)                 |
 | securitySchemes | Map[`string`, [Security Scheme Object](#security-Scheme-Object) or [Reference Object](#reference-Object)] | An object to hold reusable [Security Scheme Objects](#security-Scheme-Object) |
 | links           | Map[`string`, [Link Object](#link-Object) or [Reference Object](#reference-Object)]                       | An object to hold reusable [Link Objects](#link-Object)                       |
@@ -638,7 +641,7 @@ components:
 
 #### URIs Object
 
-Holds the WAMP URIs of topics and RPCs and their actions.
+Holds the WAMP Topic and RPC URIs actions.
 The URIs MAY be empty, due to [Access Control List (ACL) constraints](#security-Filtering).
 
 ##### Patterned URI Actions
@@ -717,15 +720,15 @@ com.store.pets.get:
                                 $ref: '#/components/schemas/pet'
 ```
 
-#### URI Action Object
+#### URI RPC Action Object
 
-Describes the single action on a WAMP URI.
+Describes the single WAMP RPC Call.
 
 ##### Fixed Fields
 
 | Field Name                 | Type                                                                             | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 |----------------------------|----------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| type                       | `string`. ENUM: ["topic", "rpc"]                                                 | **REQUIRED**. The type of WAMP URI. This defines how to work with this URI: make a call or publish/subscribe.                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| type                       | `string`                                                                         | **REQUIRED**. The type of WAMP URI. Must be set to "rpc".                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | summary                    | `string`                                                                         | A short summary of what the operation does.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | description                | `string`                                                                         | A verbose explanation of the operation behavior. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                                                                                                                                                                                                                                                                                                                                                                                |
 | tags                       | [string]                                                                         | A list of tags for API documentation control. Tags can be used for logical grouping of actions by resources or any other qualifier.                                                                                                                                                                                                                                                                                                                                                                                              |
@@ -736,15 +739,151 @@ Describes the single action on a WAMP URI.
 | response                   | [Response Object](#response-Object)                                              | The list of possible responses as they are returned from executing this action.                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | errors                     | [[Error Object](#error-Object)]                                                  | The list of possible errored responses that can be thrown during executing this action.                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | security                   | [[Security Requirement Object](#security-Requirement-Object)]                    | A declaration of which security mechanisms can be used for this operation. The list of values includes alternative security requirement objects that can be used. Only one of the security requirement objects need to be satisfied to authorize a request. To make security optional, an empty security requirement (`{}`) can be included in the array. This definition overrides any declared top-level [WampAPI Object](#WampAPI-Object) `security`. To remove a top-level security declaration, an empty array can be used. |
-| supportsProgressiveCalls   | `boolean`                                                                        | Only for RPCs. Determines if the RPC supports `Progressive calls` Advanced Profile WAMP Feature. Defaults to `false`.                                                                                                                                                                                                                                                                                                                                                                                                            |
-| supportsProgressiveResults | `boolean`                                                                        | Only for RPCs. Determines if the RPC supports `Progressive call results` Advanced Profile WAMP Feature. Defaults to `false`.                                                                                                                                                                                                                                                                                                                                                                                                     |
+| supportsProgressiveCalls   | `boolean`                                                                        | Determines if the RPC supports `Progressive calls` Advanced Profile WAMP Feature. Defaults to `false`.                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| supportsProgressiveResults | `boolean`                                                                        | Determines if the RPC supports `Progressive call results` Advanced Profile WAMP Feature. Defaults to `false`.                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| supportsE2EE               | `boolean`                                                                        | Determines if the RPC supports `End-2-End Encryption` Advanced Profile WAMP Feature. Defaults to `false`.                                                                                                                                                                                                                                                                                                                                                                                                                        |
+
+This object MAY be extended with [Specification Extensions](#specification-Extensions).
+
+##### URI RPC Action Example
+
+*****FIXME*****: adopt URI RPC Action Example
+
+```json
+{
+    "tags": [
+        "pet"
+    ],
+    "summary": "Updates a pet in the store with form data",
+    "operationId": "updatePetWithForm",
+    "parameters": [
+        {
+            "name": "petId",
+            "in": "path",
+            "description": "ID of pet that needs to be updated",
+            "required": true,
+            "schema": {
+                "type": "string"
+            }
+        }
+    ],
+    "requestBody": {
+        "content": {
+            "application/x-www-form-urlencoded": {
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "description": "Updated name of the pet",
+                            "type": "string"
+                        },
+                        "status": {
+                            "description": "Updated status of the pet",
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "status"
+                    ]
+                }
+            }
+        }
+    },
+    "responses": {
+        "200": {
+            "description": "Pet updated.",
+            "content": {
+                "application/json": {},
+                "application/xml": {}
+            }
+        },
+        "405": {
+            "description": "Method Not Allowed",
+            "content": {
+                "application/json": {},
+                "application/xml": {}
+            }
+        }
+    },
+    "security": [
+        {
+            "petstore_auth": [
+                "write:pets",
+                "read:pets"
+            ]
+        }
+    ]
+}
+```
+
+```yaml
+tags:
+    - pet
+summary: Updates a pet in the store with form data
+operationId: updatePetWithForm
+parameters:
+    -   name: petId
+        in: path
+        description: ID of pet that needs to be updated
+        required: true
+        schema:
+            type: string
+requestBody:
+    content:
+        'application/x-www-form-urlencoded':
+            schema:
+                type: object
+                properties:
+                    name:
+                        description: Updated name of the pet
+                        type: string
+                    status:
+                        description: Updated status of the pet
+                        type: string
+                required:
+                    - status
+responses:
+    '200':
+        description: Pet updated.
+        content:
+            'application/json': { }
+            'application/xml': { }
+    '405':
+        description: Method Not Allowed
+        content:
+            'application/json': { }
+            'application/xml': { }
+security:
+    -   petstore_auth:
+            - write:pets
+            - read:pets
+```
+
+#### URI Topic Action Object
+
+Describes the single WAMP Events Topic Publication/Subscription.
+
+##### Fixed Fields
+
+| Field Name                 | Type                                                                             | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+|----------------------------|----------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| type                       | `string`.                                                                        | **REQUIRED**. The type of WAMP URI. Must be set to "topic".                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| summary                    | `string`                                                                         | A short summary of what the operation does.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| description                | `string`                                                                         | A verbose explanation of the operation behavior. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                                                                                                                                                                                                                                                                                                                                                                                |
+| tags                       | [string]                                                                         | A list of tags for API documentation control. Tags can be used for logical grouping of actions by resources or any other qualifier.                                                                                                                                                                                                                                                                                                                                                                                              |
+| deprecated                 | `boolean`                                                                        | Declares this action to be deprecated. Consumers SHOULD refrain from usage of the declared action. Default value is `false`.                                                                                                                                                                                                                                                                                                                                                                                                     |
+| externalDocs               | [External Documentation Object](#external-Documentation-Object)                  | Additional external documentation for this operation.                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| parameters                 | [[Parameter Object](#parameter-Object) or [Reference Object](#reference-Object)] | A list of parameters that are applicable for this operation. The list MUST NOT include duplicated parameters. A unique parameter is defined by a name. The list can use the [Reference Object](#reference-Object) to link to parameters that are defined at the [WampAPI Object's components](#Components-Object) `parameters`.                                                                                                                                                                                                  |
+| event                      | [Event Object](#event-Object) or [Reference Object](#reference-Object)           | The event payload applicable for publishing to topic or that can be received by subscription.                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| errors                     | [[Error Object](#error-Object)]                                                  | The list of possible errored responses that can be thrown during executing this action.                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| security                   | [[Security Requirement Object](#security-Requirement-Object)]                    | A declaration of which security mechanisms can be used for this operation. The list of values includes alternative security requirement objects that can be used. Only one of the security requirement objects need to be satisfied to authorize a request. To make security optional, an empty security requirement (`{}`) can be included in the array. This definition overrides any declared top-level [WampAPI Object](#WampAPI-Object) `security`. To remove a top-level security declaration, an empty array can be used. |
 | supportsE2EE               | `boolean`                                                                        | Determines if the URI Action (RPC or events topic) supports `End-2-End Encryption` Advanced Profile WAMP Feature. Defaults to `false`.                                                                                                                                                                                                                                                                                                                                                                                           |
 
 This object MAY be extended with [Specification Extensions](#specification-Extensions).
 
-##### URI Action Example
+##### URI Topic Action Example
 
-*****FIXME*****: adopt URI Action Example
+*****FIXME*****: adopt URI RPC Action Example
 
 ```json
 {
@@ -896,8 +1035,6 @@ Describes a single action URI component parameter.
 
 ##### Parameter Object Examples
 
-A header parameter with an array of 64 bit integer numbers:
-
 ```json
 {
     "name": "catalogue-section",
@@ -912,7 +1049,7 @@ description: A catalog section name
 
 #### Request Object
 
-Describes a single request payload.
+Describes a single RPC request payload.
 
 ##### Fixed Fields
 
@@ -923,11 +1060,11 @@ Describes a single request payload.
 | kwargs              | Map[`string`, any] | The contents of WAMP Message `ArgumentsKw dict`. This MUST be an object with any number of `string` keys.                                                                                                                                     |
 | required            | `boolean`          | Determines if the request payload is required for the action. Defaults to `false`.                                                                                                                                                            |
 
-At least one of the `args`, `kwargs` MUST be defined.
-
 ##### Request Examples
 
 A request body with a referenced model definition.
+
+*****FIXME*****: adopt Request Examples
 
 ```json
 {
@@ -975,6 +1112,8 @@ A request body with a referenced model definition.
 }
 ```
 
+*****FIXME*****: adopt Request Examples
+
 ```yaml
 description: user to add to the system
 content:
@@ -1006,6 +1145,8 @@ content:
 
 A body parameter that is an array of string values:
 
+*****FIXME*****: adopt Request Examples
+
 ```json
 {
     "description": "user to add to the system",
@@ -1034,330 +1175,24 @@ content:
                 type: string
 ```
 
-
-##### Considerations for File Uploads
-
-In contrast with the 2.0 specification, `file` input/output content in WampAPI is described with the same semantics as
-any other schema type.
-
-In contrast with the 3.0 specification, the `format` keyword has no effect on the content-encoding of the schema. JSON
-Schema offers a `contentEncoding` keyword, which may be used to specify the `Content-Encoding` for the schema.
-The `contentEncoding` keyword supports all encodings defined in [RFC4648](https://tools.ietf.org/html/rfc4648),
-including "base64" and "base64url", as well as "quoted-printable"
-from [RFC2045](https://tools.ietf.org/html/rfc2045#section-6.7). The encoding specified by the `contentEncoding` keyword
-is independent of an encoding specified by the `Content-Type` header in the request or response or metadata of a
-multipart body -- when both are present, the encoding specified in the `contentEncoding` is applied first and then the
-encoding specified in the `Content-Type` header.
-
-JSON Schema also offers a `contentMediaType` keyword. However, when the media type is already specified by the Media
-Type Object's key, or by the `contentType` field of an [Encoding Object](#encodingObject), the `contentMediaType`keyword
-SHALL be ignored if present.
-
-Examples:
-
-Content transferred in binary (octet-stream) MAY omit `schema`:
-
-```yaml
-# a PNG image as a binary file:
-content:
-    image/png: { }
-```
-
-```yaml
-# an arbitrary binary file:
-content:
-    application/octet-stream: { }
-```
-
-Binary content transferred with base64 encoding:
-
-```yaml
-content:
-    image/png:
-        schema:
-            type: string
-            contentMediaType: image/png
-            contentEncoding: base64
-```
-
-Note that the `Content-Type` remains `image/png`, describing the semantics of the payload. The JSON Schema `type`
-and `contentEncoding` fields explain that the payload is transferred as text. The JSON Schema `contentMediaType` is
-technically redundant, but can be used by JSON Schema tools that may not be aware of the WampAPI context.
-
-These examples apply to either input payloads of file uploads or response payloads.
-
-A `requestBody` for submitting a file in a `POST` operation may look like the following example:
-
-```yaml
-requestBody:
-    content:
-        application/octet-stream: { }
-```
-
-In addition, specific media types MAY be specified:
-
-```yaml
-# multiple, specific media types may be specified:
-requestBody:
-    content:
-        # a binary file of type png or jpeg
-        image/jpeg: { }
-        image/png: { }
-```
-
-To upload multiple files, a `multipart` media type MUST be used:
-
-```yaml
-requestBody:
-    content:
-        multipart/form-data:
-            schema:
-                properties:
-                    # The property name 'file' will be used for all files.
-                    file:
-                        type: array
-                        items: { }
-```
-
-As seen in the section on `multipart/form-data` below, the empty schema for `items` indicates a media type
-of `application/octet-stream`.
-
-##### Support for x-www-form-urlencoded Request Bodies
-
-To submit content using form url encoding via [RFC1866](https://tools.ietf.org/html/rfc1866), the following
-definition may be used:
-
-```yaml
-requestBody:
-    content:
-        application/x-www-form-urlencoded:
-            schema:
-                type: object
-                properties:
-                    id:
-                        type: string
-                        format: uuid
-                    address:
-                        # complex types are stringified to support RFC 1866
-                        type: object
-                        properties: { }
-```
-
-In this example, the contents in the `requestBody` MUST be stringified
-per [RFC1866](https://tools.ietf.org/html/rfc1866/) when passed to the server. In addition, the `address` field complex
-object will be stringified.
-
-When passing complex objects in the `application/x-www-form-urlencoded` content type, the default serialization strategy
-of such properties is described in the [Encoding Object](#encodingObject)'s [style](#encodingStyle) property
-as `form`.
-
-##### Special Considerations for `multipart` Content
-
-It is common to use `multipart/form-data` as a `Content-Type` when transferring request bodies to operations. In
-contrast to 2.0, a `schema` is REQUIRED to define the input parameters to the operation when using `multipart` content.
-This supports complex structures as well as supporting mechanisms for multiple file uploads.
-
-In a `multipart/form-data` request body, each schema property, or each element of a schema array property, takes a
-section in the payload with an internal header as defined by [RFC7578](https://tools.ietf.org/html/rfc7578). The
-serialization strategy for each property of a `multipart/form-data` request body can be specified in an
-associated [Encoding Object](#encodingObject).
-
-When passing in `multipart` types, boundaries MAY be used to separate sections of the content being transferred – thus,
-the following default `Content-Type`s are defined for `multipart`:
-
-* If the property is a primitive, or an array of primitive values, the default Content-Type is `text/plain`
-* If the property is complex, or an array of complex values, the default Content-Type is `application/json`
-* If the property is a `type: string` with a `contentEncoding`, the default Content-Type is `application/octet-stream`
-
-Per the JSON Schema specification, `contentMediaType` without `contentEncoding` present is treated as
-if `contentEncoding: identity` were present. While useful for embedding text documents such as `text/html` into JSON
-strings, it is not useful for a `multipart/form-data` part, as it just causes the document to be treated as `text/plain`
-instead of its actual media type. Use the Encoding Object without `contentMediaType` if no `contentEncoding` is
-required.
-
-Examples:
-
-```yaml
-requestBody:
-    content:
-        multipart/form-data:
-            schema:
-                type: object
-                properties:
-                    id:
-                        type: string
-                        format: uuid
-                    address:
-                        # default Content-Type for objects is `application/json`
-                        type: object
-                        properties: { }
-                    profileImage:
-                        # Content-Type for application-level encoded resource is `text/plain`
-                        type: string
-                        contentMediaType: image/png
-                        contentEncoding: base64
-                    children:
-                        # default Content-Type for arrays is based on the _inner_ type (`text/plain` here)
-                        type: array
-                        items:
-                            type: string
-                    addresses:
-                        # default Content-Type for arrays is based on the _inner_ type (object shown, so `application/json` in this example)
-                        type: array
-                        items:
-                            type: object
-                            $ref: '#/components/schemas/Address'
-```
-
-An `encoding` attribute is introduced to give you control over the serialization of parts of `multipart` request bodies.
-This attribute is _only_ applicable to `multipart` and `application/x-www-form-urlencoded` request bodies.
-
-#### Encoding Object
-
-A single encoding definition applied to a single schema property.
-
-##### Fixed Fields
-
- Field Name                                        |                      Type                      | Description
----------------------------------------------------|----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- contentType     |                    `string`                    | The Content-Type for encoding a specific property. Default value depends on the property type: for `object` - `application/json`;  for `array` – the default is defined based on the inner type; for all other cases the default is `application/octet-stream`. The value can be a specific media type (e.g. `application/json`), a wildcard media type (e.g. `image/*`), or a comma-separated list of the two types.
- headers             | Map[`string`, [Header Object](#headerObject) \ | [Reference Object](#reference-Object)]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | A map allowing additional information to be provided as headers, for example `Content-Disposition`.  `Content-Type` is described separately and SHALL be ignored in this section. This property SHALL be ignored if the request body media type is not a `multipart`.
- style                 |                    `string`                    | Describes how a specific property value will be serialized depending on its type.  See [Parameter Object](#parameter-Object) for details on the [style](#parameterStyle) property. The behavior follows the same values as `query` parameters, including default values. This property SHALL be ignored if the request body media type is not `application/x-www-form-urlencoded` or `multipart/form-data`. If a value is explicitly defined, then the value of [contentType](#encodingContentType) (implicit or explicit) SHALL be ignored.
- explode             |                   `boolean`                    | When this is true, property values of type `array` or `object` generate separate parameters for each value of the array, or key-value-pair of the map.  For other types of properties this property has no effect. When [style](#encodingStyle) is `form`, the default value is `true`. For all other styles, the default value is `false`. This property SHALL be ignored if the request body media type is not `application/x-www-form-urlencoded` or `multipart/form-data`. If a value is explicitly defined, then the value of [contentType](#encodingContentType) (implicit or explicit) SHALL be ignored.
- allowReserved |                   `boolean`                    | Determines whether the parameter value SHOULD allow reserved characters, as defined by [RFC3986](https://tools.ietf.org/html/rfc3986#section-2.2) `:/?#[]@!$&'()*+,;=` to be included without percent-encoding. The default value is `false`. This property SHALL be ignored if the request body media type is not `application/x-www-form-urlencoded` or `multipart/form-data`. If a value is explicitly defined, then the value of [contentType](#encodingContentType) (implicit or explicit) SHALL be ignored.
-
-This object MAY be extended with [Specification Extensions](#specification-Extensions).
-
-##### Encoding Object Example
-
-```yaml
-requestBody:
-    content:
-        multipart/form-data:
-            schema:
-                type: object
-                properties:
-                    id:
-                        # default is text/plain
-                        type: string
-                        format: uuid
-                    address:
-                        # default is application/json
-                        type: object
-                        properties: { }
-                    historyMetadata:
-                        # need to declare XML format!
-                        description: metadata in XML format
-                        type: object
-                        properties: { }
-                    profileImage: { }
-            encoding:
-                historyMetadata:
-                    # require XML Content-Type in utf-8 encoding
-                    contentType: application/xml; charset=utf-8
-                profileImage:
-                    # only accept png/jpeg
-                    contentType: image/png, image/jpeg
-                    headers:
-                        X-Rate-Limit-Limit:
-                            description: The number of allowed requests in the current period
-                            schema:
-                                type: integer
-```
-
-#### Responses Object
-
-A container for the expected responses of an operation.
-The container maps a HTTP response code to the expected response.
-
-The documentation is not necessarily expected to cover all possible HTTP response codes because they may not be known in
-advance.
-However, documentation is expected to cover a successful operation response and any known errors.
-
-The `default` MAY be used as a default response object for all HTTP codes
-that are not covered individually by the `Responses Object`.
-
-The `Responses Object` MUST contain at least one response code, and if only one
-response code is provided it SHOULD be the response for a successful operation
-call.
-
-##### Fixed Fields
-
- Field Name                             |                 Type                 | Description
-----------------------------------------|------------------------------------|--------------------------------------
- default | [Response Object](#response-Object) \ | [Reference Object](#reference-Object) | The documentation of responses other than the ones declared for specific HTTP response codes. Use this field to cover undeclared responses.
-
-##### Patterned Fields
-
- Field Pattern                                              |                 Type                 | Description
-------------------------------------------------------------|------------------------------------|--------------------------------------
- [HTTP Status Code](#httpCodes) | [Response Object](#response-Object) \ | [Reference Object](#reference-Object) | Any [HTTP status code](#httpCodes) can be used as the property name, but only one property per code, to describe the expected response for that HTTP status code. This field MUST be enclosed in quotation marks (for example, "200") for compatibility between JSON and YAML. To define a range of response codes, this field MAY contain the uppercase wildcard character `X`. For example, `2XX` represents all response codes between `[200-299]`. Only the following range definitions are allowed: `1XX`, `2XX`, `3XX`, `4XX`, and `5XX`. If a response is defined using an explicit code, the explicit code definition takes precedence over the range definition for that code.
-
-This object MAY be extended with [Specification Extensions](#specification-Extensions).
-
-##### Responses Object Example
-
-A 200 response for a successful operation and a default response for others (implying an error):
-
-```json
-{
-    "200": {
-        "description": "a pet to be returned",
-        "content": {
-            "application/json": {
-                "schema": {
-                    "$ref": "#/components/schemas/Pet"
-                }
-            }
-        }
-    },
-    "default": {
-        "description": "Unexpected error",
-        "content": {
-            "application/json": {
-                "schema": {
-                    "$ref": "#/components/schemas/ErrorModel"
-                }
-            }
-        }
-    }
-}
-```
-
-```yaml
-'200':
-    description: a pet to be returned
-    content:
-        application/json:
-            schema:
-                $ref: '#/components/schemas/Pet'
-default:
-    description: Unexpected error
-    content:
-        application/json:
-            schema:
-                $ref: '#/components/schemas/ErrorModel'
-```
-
 #### Response Object
 
-Describes a single response from an API Operation, including design-time, static
-`links` to operations based on the response.
+Describes a single RPC response payload.
 
 ##### Fixed Fields
 
- Field Name                                    |                         Type                         | Description
------------------------------------------------|----------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- description |                       `string`                       | **REQUIRED**. A description of the response. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.
- headers         |   Map[`string`, [Header Object](#headerObject)  \    | [Reference Object](#reference-Object)]                                                                                                                                                                                                                                                                       |  Maps a header name to its definition. [RFC7230](https://tools.ietf.org/html/rfc7230#page-22) states header names are case insensitive. If a response header is defined with the name `"Content-Type"`, it SHALL be ignored.
- content         | Map[`string`, [Media Type Object](#mediaTypeObject)] | A map containing descriptions of potential response payloads. The key is a media type or [media type range](https://tools.ietf.org/html/rfc7231#appendix-D) and the value describes it.  For responses that match multiple keys, only the most specific key is applicable. e.g. text/plain overrides text/*
- links             |      Map[`string`, [Link Object](#link-Object) \      | [Reference Object](#reference-Object)]                                                                                                                                                                                                                                                                       | A map of operations links that can be followed from the response. The key of the map is a short name for the link, following the naming constraints of the names for [Component Objects](#componentsObject).
-
-This object MAY be extended with [Specification Extensions](#specification-Extensions).
+| Field Name  | Type               | Description                                                                                                                                                                                                  |
+|-------------|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| description | `string`           | A brief description of the response payload. This could contain examples of use.  [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                           |
+| args        | [any]              | The contents of WAMP Message `Arguments list`. This MUST be an array. In case when `Arguments list` is omitted by the sender but `ArgumentsKw dict` is present, `Arguments list` will be an empty array `[]` |
+| kwargs      | Map[`string`, any] | The contents of WAMP Message `ArgumentsKw dict`. This MUST be an object with any number of `string` keys.                                                                                                    |
+| details     | Map[`string`, any] | The contents of WAMP Message `Details dict`. This MUST be an object with any number of `string` keys.                                                                                                        |
 
 ##### Response Object Examples
 
 Response of an array of a complex type:
+
+*****FIXME*****: adopt Response Object Examples
 
 ```json
 {
@@ -1375,6 +1210,8 @@ Response of an array of a complex type:
 }
 ```
 
+*****FIXME*****: adopt Response Object Examples
+
 ```yaml
 description: A complex object array response
 content:
@@ -1386,6 +1223,8 @@ content:
 ```
 
 Response with a string type:
+
+*****FIXME*****: adopt Response Object Examples
 
 ```json
 {
@@ -1408,64 +1247,6 @@ content:
             type: string
 ```
 
-Plain text response with headers:
-
-```json
-{
-    "description": "A simple string response",
-    "content": {
-        "text/plain": {
-            "schema": {
-                "type": "string",
-                "example": "whoa!"
-            }
-        }
-    },
-    "headers": {
-        "X-Rate-Limit-Limit": {
-            "description": "The number of allowed requests in the current period",
-            "schema": {
-                "type": "integer"
-            }
-        },
-        "X-Rate-Limit-Remaining": {
-            "description": "The number of remaining requests in the current period",
-            "schema": {
-                "type": "integer"
-            }
-        },
-        "X-Rate-Limit-Reset": {
-            "description": "The number of seconds left in the current period",
-            "schema": {
-                "type": "integer"
-            }
-        }
-    }
-}
-```
-
-```yaml
-description: A simple string response
-content:
-    text/plain:
-        schema:
-            type: string
-        example: 'whoa!'
-headers:
-    X-Rate-Limit-Limit:
-        description: The number of allowed requests in the current period
-        schema:
-            type: integer
-    X-Rate-Limit-Remaining:
-        description: The number of remaining requests in the current period
-        schema:
-            type: integer
-    X-Rate-Limit-Reset:
-        description: The number of seconds left in the current period
-        schema:
-            type: integer
-```
-
 Response with no return value:
 
 ```json
@@ -1478,123 +1259,132 @@ Response with no return value:
 description: object created
 ```
 
-#### Callback Object
+#### Event Object
 
-A map of possible out-of band callbacks related to the parent operation.
-Each value in the map is a [WAMP URI Item Object](#uri-action-object) that describes a set of requests that may be initiated by
-the API provider and the expected responses.
-The key value used to identify the path item object is an expression, evaluated at runtime, that identifies a URL to use
-for the callback operation.
-
-##### Patterned Fields
-
- Field Pattern                                 |                 Type                  | Description
------------------------------------------------|-------------------------------------|--------------------------------------
- {expression} | [WAMP URI Item Object](#uri-action-object) \ | [Reference Object](#reference-Object) | A Path Item Object, or a reference to one, used to define a callback request and expected responses.  A [complete example](../examples/v3.0/callback-example.yaml) is available.
-
-This object MAY be extended with [Specification Extensions](#specification-Extensions).
-
-##### Key Expression
-
-The key that identifies the [WAMP URI Item Object](#uri-action-object) is a [runtime expression](#runtimeExpression) that can
-be evaluated in the context of a runtime HTTP request/response to identify the URL to be used for the callback request.
-A simple example might be `$request.body#/url`.
-However, using a [runtime expression](#runtimeExpression) the complete HTTP message can be accessed.
-This includes accessing any part of a body that a JSON Pointer [RFC6901](https://tools.ietf.org/html/rfc6901) can
-reference.
-
-For example, given the following HTTP request:
-
-```http
-POST /subscribe/myevent?queryUrl=https://clientdomain.com/stillrunning HTTP/1.1
-Host: example.org
-Content-Type: application/json
-Content-Length: 187
-
-{
-  "failedUrl" : "https://clientdomain.com/failed",
-  "successUrls" : [
-    "https://clientdomain.com/fast",
-    "https://clientdomain.com/medium",
-    "https://clientdomain.com/slow"
-  ]
-}
-
-201 Created
-Location: https://example.org/subscription/1
-```
-
-The following examples show how the various expressions evaluate, assuming the callback operation has a uri parameter
-named `eventType` and a query parameter named `queryUrl`.
-
- Expression                   | Value
-------------------------------|:-------------------------------------------------------------------------------------
- $url                         | https://example.org/subscribe/myevent?queryUrl=https://clientdomain.com/stillrunning
- $method                      | POST
- $request.path.eventType      | myevent
- $request.query.queryUrl      | https://clientdomain.com/stillrunning
- $request.header.content-Type | application/json
- $request.body#/failedUrl     | https://clientdomain.com/failed
- $request.body#/successUrls/2 | https://clientdomain.com/medium
- $response.header.Location    | https://example.org/subscription/1
-
-##### Callback Object Examples
-
-The following example uses the user provided `queryUrl` query string parameter to define the callback URL. This is an
-example of how to use a callback object to describe a WebHook callback that goes with the subscription operation to
-enable registering for the WebHook.
-
-```yaml
-myCallback:
-    '{$request.query.queryUrl}':
-        post:
-            requestBody:
-                description: Callback payload
-                content:
-                    'application/json':
-                        schema:
-                            $ref: '#/components/schemas/SomePayload'
-            responses:
-                '200':
-                    description: callback successfully processed
-```
-
-The following example shows a callback where the server is hard-coded, but the query string parameters are populated
-from the `id` and `email` property in the request body.
-
-```yaml
-transactionCallback:
-    'http://notificationServer.com?transactionId={$request.body#/id}&email={$request.body#/email}':
-        post:
-            requestBody:
-                description: Callback payload
-                content:
-                    'application/json':
-                        schema:
-                            $ref: '#/components/schemas/SomePayload'
-            responses:
-                '200':
-                    description: callback successfully processed
-```
-
-#### Example Object
+Describes a single Topic event payload.
 
 ##### Fixed Fields
 
- Field Name                                       |   Type   | Description
---------------------------------------------------|--------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- summary             | `string` | Short description for the example.
- description     | `string` | Long description for the example. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.
- value                 |   Any    | Embedded literal example. The `value` field and `externalValue` field are mutually exclusive. To represent examples of media types that cannot naturally represented in JSON or YAML, use a string value to contain the example, escaping where necessary.
- externalValue | `string` | A URI that points to the literal example. This provides the capability to reference examples that cannot easily be included in JSON or YAML documents.  The `value` field and `externalValue` field are mutually exclusive. See the rules for resolving [Relative References](#relative-References-URI).
+| Field Name  | Type               | Description                                                                                                                                                                                                  |
+|-------------|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| description | `string`           | A brief description of the event payload. This could contain examples of use.  [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                              |
+| args        | [any]              | The contents of WAMP Message `Arguments list`. This MUST be an array. In case when `Arguments list` is omitted by the sender but `ArgumentsKw dict` is present, `Arguments list` will be an empty array `[]` |
+| kwargs      | Map[`string`, any] | The contents of WAMP Message `ArgumentsKw dict`. This MUST be an object with any number of `string` keys.                                                                                                    |
+| details     | Map[`string`, any] | The contents of WAMP Message `Details dict`. This MUST be an object with any number of `string` keys.                                                                                                        |
+
+##### Event Object Examples
+
+Event of an array of a complex type:
+
+*****FIXME*****: adopt Event Object Examples
+
+```json
+{
+    "description": "A complex object array event",
+    "content": {
+        "application/json": {
+            "schema": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/components/schemas/VeryComplexType"
+                }
+            }
+        }
+    }
+}
+```
+
+*****FIXME*****: adopt Event Object Examples
+
+```yaml
+description: A complex object array event
+content:
+    application/json:
+        schema:
+            type: array
+            items:
+                $ref: '#/components/schemas/VeryComplexType'
+```
+
+Event with a string type:
+
+*****FIXME*****: adopt Event Object Examples
+
+```json
+{
+    "description": "A simple string event",
+    "content": {
+        "text/plain": {
+            "schema": {
+                "type": "string"
+            }
+        }
+    }
+}
+```
+
+```yaml
+description: A simple string event
+content:
+    text/plain:
+        schema:
+            type: string
+```
+
+Event with no return value:
+
+```json
+{
+    "description": "object created"
+}
+```
+
+```yaml
+description: object created
+```
+
+#### Error Object
+
+Describes a single action processing error. This can be error during RPC Call or during event publication.
+
+##### Fixed Fields
+
+| Field Name  | Type               | Description                                                                                                                                             |
+|-------------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| error       | `string`           | **REQUIRED**. An Error URI. In most cases it will be WAMP Specification predefined URI.                                                                 |
+| description | `string`           | A brief description of the error. This could contain examples of use.  [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation. |
+| details     | Map[`string`, any] | The contents of Error `Details dict`. This MUST be an object with any number of `string` keys.                                                          |
+| args        | [any]              | The contents of Error Message `Arguments list`. This MUST be an array.                                                                                  |
+| kwargs      | Map[`string`, any] | The contents of Error Message `ArgumentsKw dict`. This MUST be an object with any number of `string` keys.                                              |
+
+For RPC Calls Error Response may include the original error payload as returned by the Callee to the Dealer. Tools
+may automatically extend Error object with `args` and `kwargs` schemas taken from the RPC request definition.
+
+##### Error Object Examples
+
+*****FIXME*****: Provide Error Object Examples
+
+#### Example Object
+
+Example object holds some payload schema with filled values.
+
+##### Fixed Fields
+
+| Field Name    | Type     | Description                                                                                                                                                                                                                                                                                              |
+|---------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| summary       | `string` | Short description for the example.                                                                                                                                                                                                                                                                       |
+| description   | `string` | Long description for the example. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                                                                                                                                                                       |
+| value         | Any      | Embedded literal example. The `value` field and `externalValue` field are mutually exclusive. To represent examples of media types that cannot naturally be represented in JSON or YAML, use a string value to contain the example, escaping where necessary.                                            |
+| externalValue | `string` | A URI that points to the literal example. This provides the capability to reference examples that cannot easily be included in JSON or YAML documents.  The `value` field and `externalValue` field are mutually exclusive. See the rules for resolving [Relative References](#relative-References-URI). |
 
 This object MAY be extended with [Specification Extensions](#specification-Extensions).
 
-In all cases, the example value is expected to be compatible with the type schema
-of its associated value. Tooling implementations MAY choose to
-validate compatibility automatically, and reject the example value(s) if incompatible.
+In all cases, the example value is expected to be compatible with the type schema of its associated value. Tooling
+implementations MAY choose to validate compatibility automatically, and reject the example value(s) if incompatible.
 
 ##### Example Object Examples
+
+*****FIXME*****: adopt Example Object Examples
 
 In a request body:
 
@@ -1654,33 +1444,23 @@ responses:
 
 #### Link Object
 
-The `Link object` represents a possible design-time link for a response.
-The presence of a link does not guarantee the caller's ability to successfully invoke it, rather it provides a known
-relationship and traversal mechanism between responses and other operations.
-
-Unlike _dynamic_ links (i.e. links provided **in** the response payload), the WAS linking mechanism does not require
-link information in the runtime response.
+The `Link object` represents a possible design-time link for a response. The presence of a link does not guarantee the
+caller's ability to successfully invoke it, rather it provides a known relationship and traversal mechanism between
+responses and other actions.
 
 For computing links, and providing instructions to execute them, a [runtime expression](#runtimeExpression) is used for
-accessing values in an operation and using them as parameters while invoking the linked operation.
+accessing values in an action and using them as parameters while invoking the linked operation.
 
 ##### Fixed Fields
 
- Field Name                                  |              Type              | Description
----------------------------------------------|------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- operationRef |            `string`            | A relative or absolute URI reference to an WAS operation. This field is mutually exclusive of the `operationId` field, and MUST point to an [Operation Object](#operationObject). Relative `operationRef` values MAY be used to locate an existing [Operation Object](#operationObject) in the WampAPI definition. See the rules for resolving [Relative References](#relative-References-URI).
- operationId   |            `string`            | The name of an _existing_, resolvable WAS operation, as defined with a unique `operationId`.  This field is mutually exclusive of the `operationRef` field.
- parameters     |      Map[`string`, Any \       | [{expression}](#runtimeExpression)]                                                                                                                                                                                                                                                                                                                                                           | A map representing parameters to pass to an operation as specified with `operationId` or identified via `operationRef`. The key is the parameter name to be used, whereas the value can be a constant or an expression to be evaluated and passed to the linked operation.  The parameter name can be qualified using the [parameter location](#parameterIn) `[{in}.]{name}` for operations that use the same parameter name in different locations (e.g. path.id).
- requestBody   |             Any \              | [{expression}](#runtimeExpression)                                                                                                                                                                                                                                                                                                                                                            | A literal value or [{expression}](#runtimeExpression) to use as a request body when calling the target operation.
- description   |            `string`            | A description of the link. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.
- server             | [Server Object](#server-Object) | A server object to be used by the target operation.
+| Field Name   | Type                                                     | Description                                                                                                                                                                                                                             |
+|--------------|----------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| operationUri | `string`                                                 | An URI of existing WAS action, MUST point to an [RPC Action Object](#URI-RPC-Action-Object) or [Topic Action Object](#URI-Topic-Action-Object).                                                                                         |
+| parameters   | Map[`string`, Any or [{expression}](#runtimeExpression)] | A map representing parameters to pass to an action as specified with `operationUri`. The key is the parameter name to be used, whereas the value can be a constant or an expression to be evaluated and passed to the linked operation. |
+| payload      | Any or [{expression}](#runtimeExpression)                | A literal value or [{expression}](#runtimeExpression) to use as a payload when calling the target action.                                                                                                                               |
+| description  | `string`                                                 | A description of the link. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                                                                                                             |
 
 This object MAY be extended with [Specification Extensions](#specification-Extensions).
-
-A linked operation MUST be identified using either an `operationRef` or `operationId`.
-In the case of an `operationId`, it MUST be unique and resolved in the scope of the WAS document.
-Because of the potential for name clashes, the `operationRef` syntax is preferred
-for WampAPI documents with external references.
 
 ##### Examples
 
@@ -1827,34 +1607,6 @@ The table below provides examples of runtime expressions and examples of their u
 
 Runtime expressions preserve the type of the referenced value.
 Expressions can be embedded into string values by surrounding the expression with `{}` curly braces.
-
-#### Header Object
-
-The Header Object follows the structure of the [Parameter Object](#parameter-Object) with the following changes:
-
-1. `name` MUST NOT be specified, it is given in the corresponding `headers` map.
-1. `in` MUST NOT be specified, it is implicitly in `header`.
-1. All traits that are affected by the location MUST be applicable to a location of `header` (for
-   example, [style](#parameterStyle)).
-
-##### Header Object Example
-
-A simple header of type `integer`:
-
-```json
-{
-    "description": "The number of allowed requests in the current period",
-    "schema": {
-        "type": "integer"
-    }
-}
-```
-
-```yaml
-description: The number of allowed requests in the current period
-schema:
-    type: integer
-```
 
 #### Tag Object
 
@@ -2362,7 +2114,7 @@ components:
 
 #### Discriminator Object
 
-When request bodies or response payloads may be one of a number of different schemas, a `discriminator` object can be
+When request or response payloads may be one of a number of different schemas, a `discriminator` object can be
 used to aid in serialization, deserialization, and validation. The discriminator is a specific object in a schema which
 is used to inform the consumer of the document of an alternative schema based on the value associated with it.
 
@@ -2507,372 +2259,6 @@ will indicate that the `Cat` schema be used. Likewise this schema:
 
 will map to `Dog` because of the definition in the `mapping` element.
 
-#### XML Object
-
-A metadata object that allows for more fine-tuned XML model definitions.
-
-When using arrays, XML element names are *not* inferred (for singular/plural forms) and the `name` property SHOULD be
-used to add that information.
-See examples for expected behavior.
-
-##### Fixed Fields
-
- Field Name                           |   Type    | Description
---------------------------------------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- name           | `string`  | Replaces the name of the element/attribute used for the described schema property. When defined within `items`, it will affect the name of the individual XML elements within the list. When defined alongside `type` being `array` (outside the `items`), it will affect the wrapping element and only if `wrapped` is `true`. If `wrapped` is `false`, it will be ignored.
- namespace | `string`  | The URI of the namespace definition. This MUST be in the form of an absolute URI.
- prefix       | `string`  | The prefix to be used for the [name](#xmlName).
- attribute | `boolean` | Declares whether the property definition translates to an attribute instead of an element. Default value is `false`.
- wrapped     | `boolean` | MAY be used only for an array definition. Signifies whether the array is wrapped (for example, `<books><book/><book/></books>`) or unwrapped (`<book/><book/>`). Default value is `false`. The definition takes effect only when defined alongside `type` being `array` (outside the `items`).
-
-This object MAY be extended with [Specification Extensions](#specification-Extensions).
-
-##### XML Object Examples
-
-The examples of the XML object definitions are included inside a property definition of a [Schema Object](#schema-Object)
-with a sample of the XML representation of it.
-
-###### No XML Element
-
-Basic string property:
-
-```json
-{
-    "animals": {
-        "type": "string"
-    }
-}
-```
-
-```yaml
-animals:
-    type: string
-```
-
-```xml
-
-<animals>...</animals>
-```
-
-Basic string array property ([wrapped](#xmlWrapped) is `false` by default):
-
-```json
-{
-    "animals": {
-        "type": "array",
-        "items": {
-            "type": "string"
-        }
-    }
-}
-```
-
-```yaml
-animals:
-    type: array
-    items:
-        type: string
-```
-
-```xml
-
-<animals>...</animals>
-<animals>...</animals>
-<animals>...</animals>
-```
-
-###### XML Name Replacement
-
-```json
-{
-    "animals": {
-        "type": "string",
-        "xml": {
-            "name": "animal"
-        }
-    }
-}
-```
-
-```yaml
-animals:
-    type: string
-    xml:
-        name: animal
-```
-
-```xml
-
-<animal>...</animal>
-```
-
-###### XML Attribute, Prefix and Namespace
-
-In this example, a full model definition is shown.
-
-```json
-{
-    "Person": {
-        "type": "object",
-        "properties": {
-            "id": {
-                "type": "integer",
-                "format": "int32",
-                "xml": {
-                    "attribute": true
-                }
-            },
-            "name": {
-                "type": "string",
-                "xml": {
-                    "namespace": "https://example.com/schema/sample",
-                    "prefix": "sample"
-                }
-            }
-        }
-    }
-}
-```
-
-```yaml
-Person:
-    type: object
-    properties:
-        id:
-            type: integer
-            format: int32
-            xml:
-                attribute: true
-        name:
-            type: string
-            xml:
-                namespace: https://example.com/schema/sample
-                prefix: sample
-```
-
-```xml
-
-<Person id="123">
-    <sample:name xmlns:sample="https://example.com/schema/sample">example</sample:name>
-</Person>
-```
-
-###### XML Arrays
-
-Changing the element names:
-
-```json
-{
-    "animals": {
-        "type": "array",
-        "items": {
-            "type": "string",
-            "xml": {
-                "name": "animal"
-            }
-        }
-    }
-}
-```
-
-```yaml
-animals:
-    type: array
-    items:
-        type: string
-        xml:
-            name: animal
-```
-
-```xml
-
-<animal>value</animal>
-<animal>value</animal>
-```
-
-The external `name` property has no effect on the XML:
-
-```json
-{
-    "animals": {
-        "type": "array",
-        "items": {
-            "type": "string",
-            "xml": {
-                "name": "animal"
-            }
-        },
-        "xml": {
-            "name": "aliens"
-        }
-    }
-}
-```
-
-```yaml
-animals:
-    type: array
-    items:
-        type: string
-        xml:
-            name: animal
-    xml:
-        name: aliens
-```
-
-```xml
-
-<animal>value</animal>
-<animal>value</animal>
-```
-
-Even when the array is wrapped, if a name is not explicitly defined, the same name will be used both internally and
-externally:
-
-```json
-{
-    "animals": {
-        "type": "array",
-        "items": {
-            "type": "string"
-        },
-        "xml": {
-            "wrapped": true
-        }
-    }
-}
-```
-
-```yaml
-animals:
-    type: array
-    items:
-        type: string
-    xml:
-        wrapped: true
-```
-
-```xml
-
-<animals>
-    <animals>value</animals>
-    <animals>value</animals>
-</animals>
-```
-
-To overcome the naming problem in the example above, the following definition can be used:
-
-```json
-{
-    "animals": {
-        "type": "array",
-        "items": {
-            "type": "string",
-            "xml": {
-                "name": "animal"
-            }
-        },
-        "xml": {
-            "wrapped": true
-        }
-    }
-}
-```
-
-```yaml
-animals:
-    type: array
-    items:
-        type: string
-        xml:
-            name: animal
-    xml:
-        wrapped: true
-```
-
-```xml
-
-<animals>
-    <animal>value</animal>
-    <animal>value</animal>
-</animals>
-```
-
-Affecting both internal and external names:
-
-```json
-{
-    "animals": {
-        "type": "array",
-        "items": {
-            "type": "string",
-            "xml": {
-                "name": "animal"
-            }
-        },
-        "xml": {
-            "name": "aliens",
-            "wrapped": true
-        }
-    }
-}
-```
-
-```yaml
-animals:
-    type: array
-    items:
-        type: string
-        xml:
-            name: animal
-    xml:
-        name: aliens
-        wrapped: true
-```
-
-```xml
-
-<aliens>
-    <animal>value</animal>
-    <animal>value</animal>
-</aliens>
-```
-
-If we change the external element but not the internal ones:
-
-```json
-{
-    "animals": {
-        "type": "array",
-        "items": {
-            "type": "string"
-        },
-        "xml": {
-            "name": "aliens",
-            "wrapped": true
-        }
-    }
-}
-```
-
-```yaml
-animals:
-    type: array
-    items:
-        type: string
-    xml:
-        name: aliens
-        wrapped: true
-```
-
-```xml
-
-<aliens>
-    <aliens>value</aliens>
-    <aliens>value</aliens>
-</aliens>
-```
-
 #### Security Scheme Object
 
 Defines a security scheme that can be used by the operations.
@@ -2975,77 +2361,6 @@ flows:
             read:pets: read your pets
 ```
 
-#### OAuth Flows Object
-
-Allows configuration of the supported OAuth Flows.
-
-##### Fixed Fields
-
- Field Name                                                  |                 Type                  | Description
--------------------------------------------------------------|-------------------------------------|-------------------------------------------------------------------------------------------------------
- implicit                   | [OAuth Flow Object](#oauthFlowObject) | Configuration for the OAuth Implicit flow
- password                   | [OAuth Flow Object](#oauthFlowObject) | Configuration for the OAuth Resource Owner Password flow
- clientCredentials | [OAuth Flow Object](#oauthFlowObject) | Configuration for the OAuth Client Credentials flow.  Previously called `application` in WampAPI 2.0.
- authorizationCode | [OAuth Flow Object](#oauthFlowObject) | Configuration for the OAuth Authorization Code flow.  Previously called `accessCode` in WampAPI 2.0.
-
-This object MAY be extended with [Specification Extensions](#specification-Extensions).
-
-#### OAuth Flow Object
-
-Configuration details for a supported OAuth Flow
-
-##### Fixed Fields
-
- Field Name                                               |          Type           | Applies To                                                            | Description
-----------------------------------------------------------|-----------------------|-----------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------
- authorizationUrl |        `string`         | `oauth2` (`"implicit"`, `"authorizationCode"`)                        | **REQUIRED**. The authorization URL to be used for this flow. This MUST be in the form of a URL. The OAuth2 standard requires the use of TLS.
- tokenUrl                 |        `string`         | `oauth2` (`"password"`, `"clientCredentials"`, `"authorizationCode"`) | **REQUIRED**. The token URL to be used for this flow. This MUST be in the form of a URL. The OAuth2 standard requires the use of TLS.
- refreshUrl             |        `string`         | `oauth2`                                                              | The URL to be used for obtaining refresh tokens. This MUST be in the form of a URL. The OAuth2 standard requires the use of TLS.
- scopes                     | Map[`string`, `string`] | `oauth2`                                                              | **REQUIRED**. The available scopes for the OAuth2 security scheme. A map between the scope name and a short description for it. The map MAY be empty.
-
-This object MAY be extended with [Specification Extensions](#specification-Extensions).
-
-##### OAuth Flow Object Examples
-
-```JSON
-{
-    "type": "oauth2",
-    "flows": {
-        "implicit": {
-            "authorizationUrl": "https://example.com/api/oauth/dialog",
-            "scopes": {
-                "write:pets": "modify pets in your account",
-                "read:pets": "read your pets"
-            }
-        },
-        "authorizationCode": {
-            "authorizationUrl": "https://example.com/api/oauth/dialog",
-            "tokenUrl": "https://example.com/api/oauth/token",
-            "scopes": {
-                "write:pets": "modify pets in your account",
-                "read:pets": "read your pets"
-            }
-        }
-    }
-}
-```
-
-```yaml
-type: oauth2
-flows:
-    implicit:
-        authorizationUrl: https://example.com/api/oauth/dialog
-        scopes:
-            write:pets: modify pets in your account
-            read:pets: read your pets
-    authorizationCode:
-        authorizationUrl: https://example.com/api/oauth/dialog
-        tokenUrl: https://example.com/api/oauth/token
-        scopes:
-            write:pets: modify pets in your account
-            read:pets: read your pets
-```
-
 #### Security Requirement Object
 
 Lists the required security schemes to execute this operation.
@@ -3100,8 +2415,8 @@ petstore_auth:
 
 ###### Optional OAuth2 Security
 
-Optional OAuth2 security as would be defined in an <a href="#WampAPI-object">WampAPI Object</a> or
-an <a href="#operation-object">Operation Object</a>:
+Optional OAuth2 security as would be defined in an [WampAPI Object](#WampAPI-object) or
+an Action Object:
 
 ```json
 {
@@ -3132,9 +2447,9 @@ specification at certain points.
 
 The extensions properties are implemented as patterned fields that are always prefixed by `"x-"`.
 
- Field Pattern                    | Type | Description
-----------------------------------|----|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- ^x- | Any  | Allows extensions to the WampAPI Schema. The field name MUST begin with `x-`, for example, `x-internal-id`. Field names beginning `x-oai-` and `x-WAS-` are reserved for uses defined by the [WampAPI Initiative](https://www.WampAPIs.org/). The value can be `null`, a primitive, an array or an object.
+| Field Pattern | Type | Description                                                                                                                                                                                                                                                             |
+|---------------|------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ^x-           | Any  | Allows extensions to the WampAPI Schema. The field name MUST begin with `x-`, for example, `x-internal-id`. Field names beginning `x-WAS-` are reserved for specification internal usage and prototyping. The value can be `null`, a primitive, an array or an object.  |
 
 The extensions may or may not be supported by the available tooling, but those may be extended as well to add requested
 support (if tools are internal or open-sourced).
@@ -3144,21 +2459,20 @@ support (if tools are internal or open-sourced).
 Some objects in the WampAPI Specification MAY be declared and remain empty, or be completely removed, even though they
 are inherently the core of the API documentation.
 
-The reasoning is to allow an additional layer of access control over the documentation.
-While not part of the specification itself, certain libraries MAY choose to allow access to parts of the documentation
-based on some form of authentication/authorization.
+The reasoning is to allow an additional layer of access control over the documentation. While not part of the
+specification itself, certain libraries MAY choose to allow access to parts of the documentation based on some form of
+authentication/authorization.
 
-Two examples of this:
+Three examples of this:
 
 1. The [URIs Object](#uris-Object) MAY be present but empty. It may be counterintuitive, but this may tell the viewer
    that they got to the right place, but can't access any documentation. They would still have access to at least
    the [Info Object](#info-Object) which may contain additional information regarding authentication.
-2. The [WAMP URI Item Object](#uri-action-object) MAY be empty. In this case, the viewer will be aware that the path exists,
-   but will not be able to see any of its operations or parameters. This is different from hiding the path itself from
+2. The [WAMP URI RPC Object](#uri-rpc-action-object) MAY be empty. In this case, the viewer will be aware that the uri exists,
+   but will not be able to see any description or parameters. This is different from hiding the uri itself from
    the [URIs Object](#uris-Object), because the user will be aware of its existence. This allows the documentation
    provider to finely control what the viewer can see.
-
-
+3. The [WAMP URI Topic Object](#uri-topic-action-object) MAY be empty. Just like an RPC described above.
 
 [BCP-14]: https://tools.ietf.org/html/bcp14
 [RFC2119]: https://tools.ietf.org/html/rfc2119
@@ -3177,6 +2491,3 @@ Two examples of this:
 [CommonMark 0.27]: https://spec.commonmark.org/0.27/
 [CommonMark syntax]: https://spec.commonmark.org/
 [SPDX]: https://spdx.org/spdx-specification-21-web-version#h.jxpfx0ykyb60
-
-
-
