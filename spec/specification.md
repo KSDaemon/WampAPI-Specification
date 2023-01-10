@@ -23,16 +23,14 @@ generate clients in various programming languages, testing tools, and many other
 
 
 
-## Definitions
-
-### WampAPI Document
+## WampAPI Document
 
 A self-contained or composite resource which defines or describes a Wamp-based API or elements of a Wamp-based API.
 The WampAPI document MUST contain at least one [WAMP URI RPC Action](#uri-rpc-action-object) or
 [WAMP URI Topic Action](#uri-topic-action-object) field and [components](#Components-Object) field. A WampAPI document
 uses and conforms to the WampAPI Specification.
 
-### WAMP Uri Templating
+## WAMP Uri Templating
 
 WAMP Uri templating refers to the usage of template expressions, delimited by curly braces ({}), to mark a section
 of a URI component as replaceable using uri parameters.
@@ -131,11 +129,10 @@ address security concerns.
 Unless specified otherwise, all properties that are URIs MAY be relative references as defined
 by [RFC3986][RFC3986-sec4.2].
 
-Relative references, including those
-in [Reference Objects](#reference-Object), [Uri RPC Action Object](#uri-rpc-action-object) `$ref`
-fields, [Uri Topic Action Object](#uri-topic-action-object) `$ref` fields, [Link Object](#link-Object) `operationRef`
-fields and [Example Object](#example-Object) `externalValue`fields, are resolved using the referring document as the
-Base URI according to [RFC3986][RFC3986-sec5.2].
+Relative references, including those in [Reference Objects](#reference-Object),
+[Uri RPC Action Object](#uri-rpc-action-object) `$ref` fields, [Uri Topic Action Object](#uri-topic-action-object)
+`$ref` fields and [Example Object](#example-Object) `externalValue` fields, are resolved using the referring document
+as the Base URI according to [RFC3986][RFC3986-sec5.2].
 
 If a URI contains a fragment identifier, then the fragment should be resolved per the fragment resolution mechanism of
 the referenced document. If the representation of the referenced document is JSON or YAML, then the fragment identifier
@@ -169,8 +166,8 @@ This is the root object of the [WampAPI document](#WampAPI-Document).
 | info              | [Info Object](#info-Object)                                     | **REQUIRED**. Provides metadata about the API. The metadata MAY be used by tooling as required.                                                                                                                                                                                                                                                                                                           |
 | jsonSchemaDialect | `string`                                                        | The default value for the `$schema` keyword within [Schema Objects](#schema-Object) contained within this WAS document. This MUST be in the form of a URI.                                                                                                                                                                                                                                                |
 | servers           | [[Server Object](#server-Object)]                               | An array of Server Objects, which provide connectivity information to a target server(s). If the `servers` property is not provided, or is an empty array, the default value would be a [Server Object](#server-Object) with an `url` value of `/`.                                                                                                                                                       |
-| uris              | [URIs Object](#uris-Object)                                     | The available WAMP URIs Actions within the API.                                                                                                                                                                                                                                                                                                                                                           |
 | components        | [Components Object](#components-Object)                         | An element to hold various schemas for the document.                                                                                                                                                                                                                                                                                                                                                      |
+| uris              | [URIs Object](#uris-Object)                                     | The available WAMP URIs Actions within the API.                                                                                                                                                                                                                                                                                                                                                           |
 | security          | [[Security Requirement Object](#security-Requirement-Object)]   | A declaration of which security mechanisms can be used across the API. The list of values includes alternative security requirement objects that can be used. Only one of the security requirement objects need to be satisfied to authorize a request. Individual operations can override this definition. To make security optional, an empty security requirement (`{}`) can be included in the array. |
 | tags              | [[Tag Object](#tag-Object)]                                     | A list of tags used by the document with additional metadata. The order of the tags can be used to reflect on their order by the parsing tools. Not all tags that are used by the URI Action Object must be declared. The tags that are not declared MAY be organized randomly or based on the tools' logic. Each tag name in the list MUST be unique.                                                    |
 | externalDocs      | [External Documentation Object](#external-Documentation-Object) | Additional external documentation.                                                                                                                                                                                                                                                                                                                                                                        |
@@ -180,8 +177,8 @@ This object MAY be extended with [Specification Extensions](#specification-Exten
 #### Info Object
 
 The object provides metadata about the API.
-The metadata MAY be used by the clients if needed, and MAY be presented in editing or documentation generation tools for
-convenience.
+The metadata MAY be used by the clients if needed, and MAY be presented in editing or documentation generation tools
+for convenience.
 
 ##### Fixed Fields
 
@@ -440,6 +437,7 @@ will have no effect on the API unless they are explicitly referenced from proper
 | requests        | Map[`string`, [Request Object](#request-Object) or [Reference Object](#reference-Object)]                 | An object to hold reusable [Request Objects](#request-Object)                 |
 | responses       | Map[`string`, [Response Object](#response-Object) or [Reference Object](#reference-Object)]               | An object to hold reusable [Response Objects](#response-Object)               |
 | events          | Map[`string`, [Event Object](#event-Object) or [Reference Object](#reference-Object)]                     | An object to hold reusable [Event Objects](#event-Object)                     |
+| errors          | Map[`string`, [Error Object](#error-Object) or [Reference Object](#reference-Object)]                     | An object to hold reusable [Error Objects](#error-Object)                     |
 | examples        | Map[`string`, [Example Object](#example-Object) or [Reference Object](#reference-Object)]                 | An object to hold reusable [Example Objects](#example-Object)                 |
 | securitySchemes | Map[`string`, [Security Scheme Object](#security-Scheme-Object) or [Reference Object](#reference-Object)] | An object to hold reusable [Security Scheme Objects](#security-Scheme-Object) |
 | links           | Map[`string`, [Link Object](#link-Object) or [Reference Object](#reference-Object)]                       | An object to hold reusable [Link Objects](#link-Object)                       |
@@ -641,7 +639,7 @@ components:
 
 #### URIs Object
 
-Holds the WAMP Topic and RPC URIs actions.
+Holds the Map of WAMP Topic and RPC URIs and their actions.
 The URIs MAY be empty, due to [Access Control List (ACL) constraints](#security-Filtering).
 
 ##### Patterned URI Actions
@@ -1053,12 +1051,12 @@ Describes a single RPC request payload.
 
 ##### Fixed Fields
 
-| Field Name          | Type               | Description                                                                                                                                                                                                                                   |
-|---------------------|--------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| description         | `string`           | A brief description of the request payload. This could contain examples of use.  [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                                                             |
-| args                | [any]              | The contents of WAMP Message `Arguments list`. This MUST be an array with any number of items (0, 1 or more). In case when `ArgumentsKw dict` is declared, but `Arguments list` is omitted, empty array `[]` will be sent as `Arguments list` |
-| kwargs              | Map[`string`, any] | The contents of WAMP Message `ArgumentsKw dict`. This MUST be an object with any number of `string` keys.                                                                                                                                     |
-| required            | `boolean`          | Determines if the request payload is required for the action. Defaults to `false`.                                                                                                                                                            |
+| Field Name          | Type               | Description                                                                                                                                                                                                                                              |
+|---------------------|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| description         | `string`           | A brief description of the request payload. This could contain examples of use.  [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                                                                        |
+| args                | [any]              | The contents of WAMP Message `Arguments list`. This if present MUST be an array with any number of items (0, 1 or more). In case when `ArgumentsKw dict` is declared, but `Arguments list` is omitted, empty array `[]` will be sent as `Arguments list` |
+| kwargs              | Map[`string`, any] | The contents of WAMP Message `ArgumentsKw dict`. This if present MUST be an object with any number of `string` keys and any supported values (primitives, arrays, objects).                                                                              |
+| required            | `boolean`          | Determines if the request payload is required for the action. Defaults to `false`.                                                                                                                                                                       |
 
 ##### Request Examples
 
@@ -1181,12 +1179,12 @@ Describes a single RPC response payload.
 
 ##### Fixed Fields
 
-| Field Name  | Type               | Description                                                                                                                                                                                                  |
-|-------------|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| description | `string`           | A brief description of the response payload. This could contain examples of use.  [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                           |
-| args        | [any]              | The contents of WAMP Message `Arguments list`. This MUST be an array. In case when `Arguments list` is omitted by the sender but `ArgumentsKw dict` is present, `Arguments list` will be an empty array `[]` |
-| kwargs      | Map[`string`, any] | The contents of WAMP Message `ArgumentsKw dict`. This MUST be an object with any number of `string` keys.                                                                                                    |
-| details     | Map[`string`, any] | The contents of WAMP Message `Details dict`. This MUST be an object with any number of `string` keys.                                                                                                        |
+| Field Name  | Type               | Description                                                                                                                                                                                                             |
+|-------------|--------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| description | `string`           | A brief description of the response payload. This could contain examples of use.  [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                                      |
+| args        | [any]              | The contents of WAMP Message `Arguments list`. This if present MUST be an array. In case when `Arguments list` is omitted by the sender but `ArgumentsKw dict` is present, `Arguments list` will be an empty array `[]` |
+| kwargs      | Map[`string`, any] | The contents of WAMP Message `ArgumentsKw dict`. This if present MUST be an object with any number of `string` keys and any supported values (primitives, arrays, objects).                                             |
+| details     | Map[`string`, any] | The contents of WAMP Message `Details dict`. This if present MUST be an object with any number of `string` keys and any supported values (primitives, arrays, objects).                                                 |
 
 ##### Response Object Examples
 
@@ -1265,12 +1263,12 @@ Describes a single Topic event payload.
 
 ##### Fixed Fields
 
-| Field Name  | Type               | Description                                                                                                                                                                                                  |
-|-------------|--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| description | `string`           | A brief description of the event payload. This could contain examples of use.  [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                              |
-| args        | [any]              | The contents of WAMP Message `Arguments list`. This MUST be an array. In case when `Arguments list` is omitted by the sender but `ArgumentsKw dict` is present, `Arguments list` will be an empty array `[]` |
-| kwargs      | Map[`string`, any] | The contents of WAMP Message `ArgumentsKw dict`. This MUST be an object with any number of `string` keys.                                                                                                    |
-| details     | Map[`string`, any] | The contents of WAMP Message `Details dict`. This MUST be an object with any number of `string` keys.                                                                                                        |
+| Field Name  | Type               | Description                                                                                                                                                                                                             |
+|-------------|--------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| description | `string`           | A brief description of the event payload. This could contain examples of use.  [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                                         |
+| args        | [any]              | The contents of WAMP Message `Arguments list`. This if present MUST be an array. In case when `Arguments list` is omitted by the sender but `ArgumentsKw dict` is present, `Arguments list` will be an empty array `[]` |
+| kwargs      | Map[`string`, any] | The contents of WAMP Message `ArgumentsKw dict`. This if present MUST be an object with any number of `string` keys and any supported values (primitives, arrays, objects).                                             |
+| details     | Map[`string`, any] | The contents of WAMP Message `Details dict`. This if present MUST be an object with any number of `string` keys and any supported values (primitives, arrays, objects).                                                 |
 
 ##### Event Object Examples
 
@@ -1349,13 +1347,13 @@ Describes a single action processing error. This can be error during RPC Call or
 
 ##### Fixed Fields
 
-| Field Name  | Type               | Description                                                                                                                                             |
-|-------------|--------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| error       | `string`           | **REQUIRED**. An Error URI. In most cases it will be WAMP Specification predefined URI.                                                                 |
-| description | `string`           | A brief description of the error. This could contain examples of use.  [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation. |
-| details     | Map[`string`, any] | The contents of Error `Details dict`. This MUST be an object with any number of `string` keys.                                                          |
-| args        | [any]              | The contents of Error Message `Arguments list`. This MUST be an array.                                                                                  |
-| kwargs      | Map[`string`, any] | The contents of Error Message `ArgumentsKw dict`. This MUST be an object with any number of `string` keys.                                              |
+| Field Name  | Type               | Description                                                                                                                                                                  |
+|-------------|--------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| error       | `string`           | **REQUIRED**. An Error URI. In most cases it will be WAMP Specification predefined URI.                                                                                      |
+| description | `string`           | A brief description of the error. This could contain examples of use.  [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                      |
+| details     | Map[`string`, any] | The contents of Error `Details dict`. This if present MUST be an object with any number of `string` keys and any supported values (primitives, arrays, objects).             |
+| args        | [any]              | The contents of Error Message `Arguments list`. This if present MUST be an array.                                                                                            |
+| kwargs      | Map[`string`, any] | The contents of Error Message `ArgumentsKw dict`. This if present MUST be an object with any number of `string` keys and any supported values (primitives, arrays, objects). |
 
 For RPC Calls Error Response may include the original error payload as returned by the Callee to the Dealer. Tools
 may automatically extend Error object with `args` and `kwargs` schemas taken from the RPC request definition.
@@ -1370,12 +1368,12 @@ Example object holds some payload schema with filled values.
 
 ##### Fixed Fields
 
-| Field Name    | Type     | Description                                                                                                                                                                                                                                                                                              |
-|---------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| summary       | `string` | Short description for the example.                                                                                                                                                                                                                                                                       |
-| description   | `string` | Long description for the example. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                                                                                                                                                                       |
-| value         | Any      | Embedded literal example. The `value` field and `externalValue` field are mutually exclusive. To represent examples of media types that cannot naturally be represented in JSON or YAML, use a string value to contain the example, escaping where necessary.                                            |
-| externalValue | `string` | A URI that points to the literal example. This provides the capability to reference examples that cannot easily be included in JSON or YAML documents.  The `value` field and `externalValue` field are mutually exclusive. See the rules for resolving [Relative References](#relative-References-URI). |
+| Field Name    | Type     | Description                                                                                                                                                                                                                                                                                                  |
+|---------------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| summary       | `string` | Short description for the example.                                                                                                                                                                                                                                                                           |
+| description   | `string` | Long description for the example. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                                                                                                                                                                           |
+| value         | Any      | Embedded literal example. The `value` field and `externalValue` field are mutually exclusive. To represent examples of media types that cannot naturally be represented in JSON or YAML, use a string value to contain the example, escaping where necessary.                                                |
+| externalValue | `string` | A URI that points to the literal example. This provides the capability to reference examples that cannot easily be included in JSON or YAML documents.  The `value` field and `externalValue` field are mutually exclusive. See the rules for resolving [Relative References](#relative-References-in-URIs). |
 
 This object MAY be extended with [Specification Extensions](#specification-Extensions).
 
@@ -1448,23 +1446,25 @@ The `Link object` represents a possible design-time link for a response. The pre
 caller's ability to successfully invoke it, rather it provides a known relationship and traversal mechanism between
 responses and other actions.
 
-For computing links, and providing instructions to execute them, a [runtime expression](#runtimeExpression) is used for
+For computing links, and providing instructions to execute them, a [runtime expression](#runtime-Expressions) is used for
 accessing values in an action and using them as parameters while invoking the linked operation.
 
 ##### Fixed Fields
 
-| Field Name   | Type                                                     | Description                                                                                                                                                                                                                             |
-|--------------|----------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| operationUri | `string`                                                 | An URI of existing WAS action, MUST point to an [RPC Action Object](#URI-RPC-Action-Object) or [Topic Action Object](#URI-Topic-Action-Object).                                                                                         |
-| parameters   | Map[`string`, Any or [{expression}](#runtimeExpression)] | A map representing parameters to pass to an action as specified with `operationUri`. The key is the parameter name to be used, whereas the value can be a constant or an expression to be evaluated and passed to the linked operation. |
-| payload      | Any or [{expression}](#runtimeExpression)                | A literal value or [{expression}](#runtimeExpression) to use as a payload when calling the target action.                                                                                                                               |
-| description  | `string`                                                 | A description of the link. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                                                                                                             |
+| Field Name   | Type                                                       | Description                                                                                                                                                                                                                             |
+|--------------|------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| operationUri | `string`                                                   | An URI of existing WAS action, MUST point to an [RPC Action Object](#URI-RPC-Action-Object) or [Topic Action Object](#URI-Topic-Action-Object).                                                                                         |
+| parameters   | Map[`string`, Any or [{expression}](#runtime-Expressions)] | A map representing parameters to pass to an action as specified with `operationUri`. The key is the parameter name to be used, whereas the value can be a constant or an expression to be evaluated and passed to the linked operation. |
+| payload      | Any or [{expression}](#runtime-Expressions)                | A literal value or [{expression}](#runtime-Expressions) to use as a payload when calling the target action.                                                                                                                             |
+| description  | `string`                                                   | A description of the link. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                                                                                                             |
 
 This object MAY be extended with [Specification Extensions](#specification-Extensions).
 
 ##### Examples
 
-Computing a link from a request operation where the `$request.path.id` is used to pass a request parameter to the linked
+*****FIXME*****: adopt Link examples
+
+Computing a link from an RPC Action where the `$request.path.id` is used to pass a request parameter to the linked
 operation.
 
 ```yaml
@@ -1515,7 +1515,7 @@ paths:
 
 When a runtime expression fails to evaluate, no parameter value is passed to the target operation.
 
-Values from the response body can be used to drive a linked operation.
+Values from the response payload can be used to drive a linked operation.
 
 ```yaml
 links:
@@ -1527,52 +1527,19 @@ links:
 ```
 
 Clients follow all links at their discretion.
-Neither permissions, nor the capability to make a successful call to that link, is guaranteed
+Neither permissions, nor the capability to make a successful call to that link, are guaranteed
 solely by the existence of a relationship.
-
-##### OperationRef Examples
-
-As references to `operationId` MAY NOT be possible (the `operationId` is an optional
-field in an [Operation Object](#operationObject)), references MAY also be made through a relative `operationRef`:
-
-```yaml
-links:
-    UserRepositories:
-        # returns array of '#/components/schemas/repository'
-        operationRef: '#/paths/~12.0~1repositories~1{username}/get'
-        parameters:
-            username: $response.body#/username
-```
-
-or an absolute `operationRef`:
-
-```yaml
-links:
-    UserRepositories:
-        # returns array of '#/components/schemas/repository'
-        operationRef: 'https://na2.gigantic-server.com/#/paths/~12.0~1repositories~1{username}/get'
-        parameters:
-            username: $response.body#/username
-```
-
-Note that in the use of `operationRef`, the _escaped forward-slash_ is necessary when
-using JSON references.
 
 ##### Runtime Expressions
 
 Runtime expressions allow defining values based on information that will only be available within the HTTP message in an
-actual API call.
-This mechanism is used by [Link Objects](#link-Object) and [Callback Objects](#callbackObject).
+actual API call. This mechanism is used by [Link Objects](#link-Object).
 
-The runtime expression is defined by the following [ABNF](https://tools.ietf.org/html/rfc5234) syntax
+The runtime expression is defined by the following [ABNF][rfc5234] syntax
 
 ```abnf
-      expression = ( "$url" / "$method" / "$statusCode" / "$request." source / "$response." source )
-      source = ( header-reference / query-reference / path-reference / body-reference )
-      header-reference = "header." token
-      query-reference = "query." name
-      path-reference = "path." name
-      body-reference = "body" ["#" json-pointer ]
+      expression = ( "$url" / "$request." payload / "$response." payload )
+      payload = "payload" ["#" json-pointer ]
       json-pointer    = *( "/" reference-token )
       reference-token = *( unescaped / escaped )
       unescaped       = %x00-2E / %x30-7D / %x7F-10FFFF
@@ -1585,9 +1552,8 @@ The runtime expression is defined by the following [ABNF](https://tools.ietf.org
         "^" / "_" / "`" / "|" / "~" / DIGIT / ALPHA
 ```
 
-Here, `json-pointer` is taken from [RFC6901](https://tools.ietf.org/html/rfc6901), `char`
-from [RFC7159](https://tools.ietf.org/html/rfc7159#section-7) and `token`
-from [RFC7230](https://tools.ietf.org/html/rfc7230#section-3.2.6).
+Here, `json-pointer` is taken from [RFC6901][RFC6901], `char` from [RFC7159][RFC7159-sec7] and
+`token` from [RFC7230][RFC7230-sec3.2].
 
 The `name` identifier is case-sensitive, whereas `token` is not.
 
@@ -1595,31 +1561,28 @@ The table below provides examples of runtime expressions and examples of their u
 
 ##### Examples
 
- Source Location       | example expression         | notes
------------------------|:---------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
- HTTP Method           | `$method`                  | The allowable values for the `$method` will be those for the HTTP operation.
- Requested media type  | `$request.header.accept`   |
- Request parameter     | `$request.path.id`         | Request parameters MUST be declared in the `parameters` section of the parent operation or they cannot be evaluated. This includes request headers.
- Request body property | `$request.body#/user/uuid` | In operations which accept payloads, references may be made to portions of the `requestBody` or the entire body.
- Request URL           | `$url`                     |
- Response value        | `$response.body#/status`   | In operations which return payloads, references may be made to portions of the response body or the entire body.
- Response header       | `$response.header.Server`  | Single header values only are available
+| Source Location          | example expression            | notes                                                                                                         |
+|--------------------------|-------------------------------|---------------------------------------------------------------------------------------------------------------|
+| URI parameter            | `uri.id`                      | URI parameters MUST be declared in the `parameters` section of the parent action or they cannot be evaluated. |
+| Request payload property | `$request.payload#/user/uuid` | In actions which accept payloads, references may be made to the entire or portions of the payload.            |
+| Response payload value   | `$response.payload#/status`   | In actions which return payloads, references may be made to the entire or portions of the payload.            |
 
 Runtime expressions preserve the type of the referenced value.
 Expressions can be embedded into string values by surrounding the expression with `{}` curly braces.
 
 #### Tag Object
 
-Adds metadata to a single tag that is used by the [Operation Object](#operationObject).
-It is not mandatory to have a Tag Object per tag defined in the Operation Object instances.
+Adds metadata to a single tag that is used by the [WAMP URI RPC Action](#uri-rpc-action-object) or
+[WAMP URI Topic Action](#uri-topic-action-object).
+It is not mandatory to have a Tag Object per tag defined in the Action Object instances.
 
 ##### Fixed Fields
 
- Field Name                                 |                             Type                              | Description
---------------------------------------------|-------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------
- name                 |                           `string`                            | **REQUIRED**. The name of the tag.
- description   |                           `string`                            | A description for the tag. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.
- externalDocs | [External Documentation Object](#external-Documentation-Object) | Additional external documentation for this tag.
+| Field Name   | Type                                                            | Description                                                                                                 |
+|--------------|-----------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------|
+| name         | `string`                                                        | **REQUIRED**. The name of the tag.                                                                          |
+| description  | `string`                                                        | A description for the tag. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation. |
+| externalDocs | [External Documentation Object](#external-Documentation-Object) | Additional external documentation for this tag.                                                             |
 
 This object MAY be extended with [Specification Extensions](#specification-Extensions).
 
@@ -1641,18 +1604,18 @@ description: Pets operations
 
 A simple object to allow referencing other components in the WampAPI document, internally and externally.
 
-The `$ref` string value contains a URI [RFC3986](https://tools.ietf.org/html/rfc3986), which identifies the location of
+The `$ref` string value contains a URI [RFC3986][RFC3986], which identifies the location of
 the value being referenced.
 
-See the rules for resolving [Relative References](#relative-References-URI).
+See the rules for resolving [Relative References](#relative-references-in-uris).
 
 ##### Fixed Fields
 
- Field Name                                     |   Type   | Description
-------------------------------------------------|--------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- $ref                | `string` | **REQUIRED**. The reference identifier. This MUST be in the form of a URI.
- summary         | `string` | A short summary which by default SHOULD override that of the referenced component. If the referenced object-type does not allow a `summary` field, then this field has no effect.
- description | `string` | A description which by default SHOULD override that of the referenced component. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation. If the referenced object-type does not allow a `description` field, then this field has no effect.
+| Field Name  | Type     | Description                                                                                                                                                                                                                                                           |
+|-------------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| $ref        | `string` | **REQUIRED**. The reference identifier. This MUST be in the form of a URI.                                                                                                                                                                                            |
+| summary     | `string` | A short summary which by default SHOULD override that of the referenced component. If the referenced object-type does not allow a `summary` field, then this field has no effect.                                                                                     |
+| description | `string` | A description which by default SHOULD override that of the referenced component. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation. If the referenced object-type does not allow a `description` field, then this field has no effect.  |
 
 This object cannot be extended with additional properties and any properties added SHALL be ignored.
 
@@ -1699,11 +1662,11 @@ $ref: definitions.yaml#/Pet
 
 The Schema Object allows the definition of input and output data types.
 These types can be objects, but also primitives and arrays. This object is a superset of
-the [JSON Schema Specification Draft 2020-12](https://tools.ietf.org/html/draft-bhutton-json-schema-00).
+the [JSON Schema Specification Draft 2020-12][JSON Schema Specification Draft 2020-12].
 
 For more information about the properties,
-see [JSON Schema Core](https://tools.ietf.org/html/draft-bhutton-json-schema-00)
-and [JSON Schema Validation](https://tools.ietf.org/html/draft-bhutton-json-schema-validation-00).
+see [JSON Schema Core][JSON Schema Specification Draft 2020-12]
+and [JSON Schema Validation][JSON Schema Validation].
 
 Unless stated otherwise, the property definitions follow those of JSON Schema and do not add any additional semantics.
 Where JSON Schema indicates that behavior is defined by the application (e.g. for annotations), WAS also defers the
@@ -1711,78 +1674,65 @@ definition of semantics to the application consuming the WampAPI document.
 
 ##### Properties
 
-The WampAPI Schema Object [dialect](https://tools.ietf.org/html/draft-bhutton-json-schema-00#section-4.3.3) is defined
-as requiring the [WAS base vocabulary](#baseVocabulary), in addition to the vocabularies as specified in the JSON Schema
-draft 2020-12 [general purpose meta-schema](https://tools.ietf.org/html/draft-bhutton-json-schema-00#section-8).
-
-The WampAPI Schema Object dialect for this version of the specification is identified by the
-URI `https://spec.WampAPIs.org/WAS/3.1/dialect/base` (the "WAS dialect schema id").
+The WampAPI Schema Object [dialect][JSON Schema dialect] is defined as vocabulary as specified in the JSON Schema
+draft 2020-12 [general purpose meta-schema][JSON Schema meta-schema].
 
 The following properties are taken from the JSON Schema specification but their definitions have been extended by the
 WAS:
 
 - description - [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.
-- format - See [Data Type Formats](#dataTypeFormat) for further details. While relying on JSON Schema's defined formats,
+- format - See [Data Type Formats](#data-types) for further details. While relying on JSON Schema's defined formats,
   the WAS offers a few additional predefined formats.
 
 In addition to the JSON Schema properties comprising the WAS dialect, the Schema Object supports keywords from any other
 vocabularies, or entirely arbitrary properties.
 
-The WampAPI Specification's base vocabulary is comprised of the following keywords:
+The WampAPI Specification's base vocabulary comprises the following keywords:
 
 ##### Fixed Fields
 
- Field Name                                      |                             Type                              | Description
--------------------------------------------------|-------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- discriminator |         [Discriminator Object](#discriminatorObject)          | Adds support for polymorphism. The discriminator is an object name that is used to differentiate between other schemas which may satisfy the payload description. See [Composition and Inheritance](#schemaComposition) for more details.
- xml                     |                   [XML Object](#xmlObject)                    | This MAY be used only on properties schemas. It has no effect on root schemas. Adds additional metadata to describe the XML representation of this property.
- externalDocs   | [External Documentation Object](#external-Documentation-Object) | Additional external documentation for this schema.
- example             |                              Any                              | A free-form property to include an example of an instance for this schema. To represent examples that cannot be naturally represented in JSON or YAML, a string value can be used to contain the example with escaping where necessary.<br><br>**Deprecated:** The `example` property has been deprecated in favor of the JSON Schema `examples` keyword. Use of `example` is discouraged, and later versions of this specification may remove it.
+| Field Name    | Type                                                            | Description                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+|---------------|-----------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| discriminator | [Discriminator Object](#discriminator-Object)                   | Adds support for polymorphism. The discriminator is an object name that is used to differentiate between other schemas which may satisfy the payload description. See `Composition and Inheritance` section below for more details.                                                                                                                                                                                                                 |
+| externalDocs  | [External Documentation Object](#external-Documentation-Object) | Additional external documentation for this schema.                                                                                                                                                                                                                                                                                                                                                                                                  |
 
 This object MAY be extended with [Specification Extensions](#specification-Extensions), though as noted, additional
 properties MAY omit the `x-` prefix within this object.
 
-###### Composition and Inheritance (Polymorphism)
+##### Composition and Inheritance (Polymorphism)
 
 The WampAPI Specification allows combining and extending model definitions using the `allOf` property of JSON Schema, in
-effect offering model composition.
-`allOf` takes an array of object definitions that are validated *independently* but together compose a single object.
+effect offering model composition. `allOf` takes an array of object definitions that are validated *independently* but
+together compose a single object.
 
-While composition offers model extensibility, it does not imply a hierarchy between the models.
-To support polymorphism, the WampAPI Specification adds the `discriminator` field.
-When used, the `discriminator` will be the name of the property that decides which schema definition validates the
-structure of the model.
-As such, the `discriminator` field MUST be a required field.
-There are two ways to define the value of a discriminator for an inheriting instance.
+While composition offers model extensibility, it does not imply a hierarchy between the models. To support polymorphism,
+the WampAPI Specification adds the `discriminator` field. When used, the `discriminator` will be the name of the
+property that decides which schema definition validates the structure of the model. As such, the `discriminator` field
+MUST be a required field. There are two ways to define the value of a discriminator for an inheriting instance.
 
 - Use the schema name.
 - Override the schema name by overriding the property with a new value. If a new value exists, this takes precedence
   over the schema name.
   As such, inline schema definitions, which do not have a given id, *cannot* be used in polymorphism.
 
-###### XML Modeling
-
-The [xml](#schemaXml) property allows extra definitions when translating the JSON definition to XML.
-The [XML Object](#xmlObject) contains additional information about the available options.
-
-###### Specifying Schema Dialects
+##### Specifying Schema Dialects
 
 It is important for tooling to be able to determine which dialect or meta-schema any given resource wishes to be
 processed with: JSON Schema Core, JSON Schema Validation, WampAPI Schema dialect, or some custom meta-schema.
 
 The `$schema` keyword MAY be present in any root Schema Object, and if present MUST be used to determine which dialect
 should be used when processing the schema. This allows use of Schema Objects which comply with other drafts of JSON
-Schema than the default Draft 2020-12 support. Tooling MUST support the <a href="#dialectSchemaId">WAS dialect schema
-id</a>, and MAY support additional values of `$schema`.
+Schema than the default Draft 2020-12 support. Tooling MUST support the WAS dialect schema id, and MAY support
+additional values of `$schema`.
 
-To allow use of a different default `$schema` value for all Schema Objects contained within an WAS document,
-a `jsonSchemaDialect` value may be set within the <a href="#WampAPI-Object">WampAPI Object</a>. If this default is not set,
+To allow use of a different default `$schema` value for all Schema Objects contained within a WAS document,
+a `jsonSchemaDialect` value may be set within the [WampAPI Object](#WampAPI-Object). If this default is not set,
 then the WAS dialect schema id MUST be used for these Schema Objects. The value of `$schema` within a Schema Object
 always overrides any default.
 
-When a Schema Object is referenced from an external resource which is not an WAS document (e.g. a bare JSON Schema
+When a Schema Object is referenced from an external resource which is not a WAS document (e.g. a bare JSON Schema
 resource), then the value of the `$schema` keyword for schemas within that resource MUST
-follow [JSON Schema rules](https://tools.ietf.org/html/draft-bhutton-json-schema-00#section-8.1.1).
+follow [JSON Schema rules][JSON Schema rules].
 
 ##### Schema Object Examples
 
@@ -1873,45 +1823,6 @@ For a string to model mapping:
 type: object
 additionalProperties:
     $ref: '#/components/schemas/ComplexModel'
-```
-
-###### Model with Example
-
-```json
-{
-    "type": "object",
-    "properties": {
-        "id": {
-            "type": "integer",
-            "format": "int64"
-        },
-        "name": {
-            "type": "string"
-        }
-    },
-    "required": [
-        "name"
-    ],
-    "example": {
-        "name": "Puma",
-        "id": 1
-    }
-}
-```
-
-```yaml
-type: object
-properties:
-    id:
-        type: integer
-        format: int64
-    name:
-        type: string
-required:
-    - name
-example:
-    name: Puma
-    id: 1
 ```
 
 ###### Models with Composition
@@ -2122,16 +2033,16 @@ When using the discriminator, _inline_ schemas will not be considered.
 
 ##### Fixed Fields
 
- Field Name                                  |          Type           | Description
----------------------------------------------|-----------------------|-----------------------------------------------------------------------------------------------
- propertyName     |        `string`         | **REQUIRED**. The name of the property in the payload that will hold the discriminator value.
-  mapping | Map[`string`, `string`] | An object to hold mappings between payload values and schema names or references.
+| Field Name   | Type                    | Description                                                                                   |
+|--------------|-------------------------|-----------------------------------------------------------------------------------------------|
+| propertyName | `string`                | **REQUIRED**. The name of the property in the payload that will hold the discriminator value. |
+| mapping      | Map[`string`, `string`] | An object to hold mappings between payload values and schema names or references.             |
 
 This object MAY be extended with [Specification Extensions](#specification-Extensions).
 
 The discriminator object is legal only when using one of the composite keywords `oneOf`, `anyOf`, `allOf`.
 
-In WAS 3.0, a response payload MAY be described to be exactly one of any number of types:
+In WAS 1.0, a response payload MAY be described to be exactly one of any number of types:
 
 ```yaml
 MyResponseType:
@@ -2157,7 +2068,7 @@ MyResponseType:
 ```
 
 The expectation now is that a property with name `petType` _MUST_ be present in the response payload, and the value will
-correspond to the name of a schema defined in the WAS document. Thus the response payload:
+correspond to the name of a schema defined in the WAS document. Thus, the response payload:
 
 ```json
 {
@@ -2248,7 +2159,7 @@ a payload like this:
 }
 ```
 
-will indicate that the `Cat` schema be used. Likewise this schema:
+will indicate that the `Cat` schema be used. Likewise, this schema:
 
 ```json
 {
@@ -2273,22 +2184,16 @@ for most use case is Authorization Code Grant flow with PKCE.
 
 ##### Fixed Fields
 
- Field Name                                                    |                  Type                   | Applies To          | Description
----------------------------------------------------------------|---------------------------------------|---------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- type                         |                `string`                 | Any                 | **REQUIRED**. The type of the security scheme. Valid values are `"apiKey"`, `"http"`, `"mutualTLS"`, `"oauth2"`, `"openIdConnect"`.
- description           |                `string`                 | Any                 | A description for security scheme. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.
- name                         |                `string`                 | `apiKey`            | **REQUIRED**. The name of the header, query or cookie parameter to be used.
- in                             |                `string`                 | `apiKey`            | **REQUIRED**. The location of the API key. Valid values are `"query"`, `"header"` or `"cookie"`.
- scheme                     |                `string`                 | `http`              | **REQUIRED**. The name of the HTTP Authorization scheme to be used in the [Authorization header as defined in RFC7235](https://tools.ietf.org/html/rfc7235#section-5.1).  The values used SHOULD be registered in the [IANA Authentication Scheme registry](https://www.iana.org/assignments/http-authschemes/http-authschemes.xhtml).
- bearerFormat         |                `string`                 | `http` (`"bearer"`) | A hint to the client to identify how the bearer token is formatted.  Bearer tokens are usually generated by an authorization server, so this information is primarily for documentation purposes.
- flows                       | [OAuth Flows Object](#oauthFlowsObject) | `oauth2`            | **REQUIRED**. An object containing configuration information for the flow types supported.
- openIdConnectUrl |                `string`                 | `openIdConnect`     | **REQUIRED**. OpenId Connect URL to discover OAuth2 configuration values. This MUST be in the form of a URL. The OpenID Connect standard requires the use of TLS.
+| Field Name       | Type                                    | Applies To          | Description                                                                                                                                                                                                                                                                                                                            |
+|------------------|-----------------------------------------|---------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| type             | `string`                                | Any                 | **REQUIRED**. The type of the security scheme. Valid values are `"ticket"`, `"wamp-cra"`, `"wamp-cryptosign"`.                                                                                                                                                                                                                         |
+| description      | `string`                                | Any                 | A description for security scheme. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                                                                                                                                                                                                    |
 
 This object MAY be extended with [Specification Extensions](#specification-Extensions).
 
 ##### Security Scheme Object Example
 
-###### Basic Authentication Sample
+*****FIXME*****: adopt Security Scheme Object Example
 
 ```json
 {
@@ -2302,89 +2207,25 @@ type: http
 scheme: basic
 ```
 
-###### API Key Sample
-
-```json
-{
-    "type": "apiKey",
-    "name": "api_key",
-    "in": "header"
-}
-```
-
-```yaml
-type: apiKey
-name: api_key
-in: header
-```
-
-###### JWT Bearer Sample
-
-```json
-{
-    "type": "http",
-    "scheme": "bearer",
-    "bearerFormat": "JWT"
-}
-```
-
-```yaml
-type: http
-scheme: bearer
-bearerFormat: JWT
-```
-
-###### Implicit OAuth2 Sample
-
-```json
-{
-    "type": "oauth2",
-    "flows": {
-        "implicit": {
-            "authorizationUrl": "https://example.com/api/oauth/dialog",
-            "scopes": {
-                "write:pets": "modify pets in your account",
-                "read:pets": "read your pets"
-            }
-        }
-    }
-}
-```
-
-```yaml
-type: oauth2
-flows:
-    implicit:
-        authorizationUrl: https://example.com/api/oauth/dialog
-        scopes:
-            write:pets: modify pets in your account
-            read:pets: read your pets
-```
-
 #### Security Requirement Object
 
-Lists the required security schemes to execute this operation.
+Lists the required security schemes to execute this action.
 The name used for each property MUST correspond to a security scheme declared in
-the [Security Schemes](#componentsSecuritySchemes) under the [Components Object](#componentsObject).
-
-Security Requirement Objects that contain multiple schemes require that all schemes MUST be satisfied for a request to
-be authorized.
-This enables support for scenarios where multiple query parameters or HTTP headers are required to convey security
-information.
+the [Security Schemes](#Security-Scheme-Object) under the [Components Object](#components-Object).
 
 When a list of Security Requirement Objects is defined on the [WampAPI Object](#WampAPI-Object)
-or [Operation Object](#operationObject), only one of the Security Requirement Objects in the list needs to be satisfied
-to authorize the request.
+or [WAMP URI RPC Action Object](#uri-rpc-action-object) or [WAMP URI Topic Action Object](#uri-topic-action-object),
+only one of the Security Requirement Objects in the list needs to be satisfied to authorize the request.
 
 ##### Patterned Fields
 
- Field Pattern                                 |    Type    | Description
------------------------------------------------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- {name} | [string] | Each name MUST correspond to a security scheme which is declared in the [Security Schemes](#componentsSecuritySchemes) under the [Components Object](#componentsObject). If the security scheme is of type `"oauth2"` or `"openIdConnect"`, then the value is a list of scope names required for the execution, and the list MAY be empty if authorization does not require a specified scope. For other security scheme types, the array MAY contain a list of role names which are required for the execution, but are not otherwise defined or exchanged in-band.
+| Field Pattern | Type     | Description                                                                                                                                                                                                                                                                                                 |
+|---------------|----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| {name}        | [string] | Each name MUST correspond to a security scheme which is declared in the [Security Schemes](#Security-Scheme-Object) under the [Components Object](#components-Object). The array MAY contain a list of role names which are required for the execution, but are not otherwise defined or exchanged in-band. |
 
 ##### Security Requirement Object Examples
 
-###### Non-OAuth2 Security Requirement
+*****FIXME*****: adopt Security Requirement Object Examples
 
 ```json
 {
@@ -2394,50 +2235,6 @@ to authorize the request.
 
 ```yaml
 api_key: [ ]
-```
-
-###### OAuth2 Security Requirement
-
-```json
-{
-    "petstore_auth": [
-        "write:pets",
-        "read:pets"
-    ]
-}
-```
-
-```yaml
-petstore_auth:
-    - write:pets
-    - read:pets
-```
-
-###### Optional OAuth2 Security
-
-Optional OAuth2 security as would be defined in an [WampAPI Object](#WampAPI-object) or
-an Action Object:
-
-```json
-{
-    "security": [
-        {},
-        {
-            "petstore_auth": [
-                "write:pets",
-                "read:pets"
-            ]
-        }
-    ]
-}
-```
-
-```yaml
-security:
-    - { }
-    -   petstore_auth:
-            - write:pets
-            - read:pets
 ```
 
 ### Specification Extensions
@@ -2477,17 +2274,26 @@ Three examples of this:
 [BCP-14]: https://tools.ietf.org/html/bcp14
 [RFC2119]: https://tools.ietf.org/html/rfc2119
 [RFC8174]: https://tools.ietf.org/html/rfc8174
+[RFC3986]: https://tools.ietf.org/html/rfc3986
 [RFC3986-sec3]: https://tools.ietf.org/html/rfc3986#section-3
 [RFC3986-sec4.2]: https://tools.ietf.org/html/rfc3986#section-4.2
 [RFC3986-sec5.1]: https://tools.ietf.org/html/rfc3986#section-5.1
 [RFC3986-sec5.2]: https://tools.ietf.org/html/rfc3986#section-5.2
 [RFC6901]: https://tools.ietf.org/html/rfc6901
+[rfc5234]: https://tools.ietf.org/html/rfc5234
+[RFC7159-sec7]: https://tools.ietf.org/html/rfc7159#section-7
+[RFC7230-sec3.2]: https://tools.ietf.org/html/rfc7230#section-3.2.6
 [Yaml-1.2]: https://yaml.org/spec/1.2/spec.html
 [JSON Schema ruleset]: https://yaml.org/spec/1.2/spec.html#id2803231
 [YAML Failsafe schema ruleset]: https://yaml.org/spec/1.2/spec.html#id2802346
 [JSON Schema Spec 2022-06]: https://www.ietf.org/archive/id/draft-bhutton-json-schema-01.html#section-4.2.1
 [JSON Schema Spec 2022-06 sec8.2]: https://www.ietf.org/archive/id/draft-bhutton-json-schema-01.html#section-8.2
 [JSON Schema Validation vocabulary]: https://tools.ietf.org/html/draft-bhutton-json-schema-validation-00#section-7.3
+[JSON Schema Validation]: https://tools.ietf.org/html/draft-bhutton-json-schema-validation-00
+[JSON Schema Specification Draft 2020-12]: https://tools.ietf.org/html/draft-bhutton-json-schema-00
+[JSON Schema dialect]: https://tools.ietf.org/html/draft-bhutton-json-schema-00#section-4.3.3
+[JSON Schema meta-schema]: https://tools.ietf.org/html/draft-bhutton-json-schema-00#section-8
+[JSON Schema rules]: https://tools.ietf.org/html/draft-bhutton-json-schema-00#section-8.1.1
 [CommonMark 0.27]: https://spec.commonmark.org/0.27/
 [CommonMark syntax]: https://spec.commonmark.org/
 [SPDX]: https://spdx.org/spdx-specification-21-web-version#h.jxpfx0ykyb60
