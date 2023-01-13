@@ -366,12 +366,12 @@ The following shows how variables can be used for a server configuration:
     "servers": [
         {
             "url": "https://{username}.gigantic-server.com:{port}/{basePath}",
-            "realm": "my-env-realm",
+            "realm": "{realm}",
             "description": "The production API server",
             "variables": {
                 "username": {
                     "default": "demo",
-                    "description": "The username used for http authorization to access the WAMP endpoint"
+                    "description": "The username namespace used for access the WAMP endpoint"
                 },
                 "port": {
                     "enum": [
@@ -382,6 +382,10 @@ The following shows how variables can be used for a server configuration:
                 },
                 "basePath": {
                     "default": "ws"
+                },
+                "realm": {
+                    "default": "userRealm",
+                    "description": "The WAMP Realm to join at the End Point"
                 }
             }
         }
@@ -392,13 +396,13 @@ The following shows how variables can be used for a server configuration:
 ```yaml
 servers:
     -   url: https://{username}.gigantic-server.com:{port}/{basePath}
-        realm: prod-env-realm
+        realm: {realm}
         description: The production API server
         variables:
             username:
                 # note! no enum here means it is an open value
                 default: demo
-                description: The username used for http authorization to access the WAMP endpoint
+                description: The username namespace used to access the WAMP endpoint
             port:
                 enum:
                     - '8443'
@@ -407,6 +411,9 @@ servers:
             basePath:
                 # open meaning there is the opportunity to use special base paths as assigned by the provider, default is `ws`
                 default: ws
+            realm:
+                default: userRealm
+                description: The WAMP Realm to join at the End Point
 ```
 
 #### Server Variable Object
@@ -440,7 +447,6 @@ will have no effect on the API unless they are explicitly referenced from proper
 | errors          | Map[`string`, [Error Object](#error-Object) or [Reference Object](#reference-Object)]                     | An object to hold reusable [Error Objects](#error-Object)                     |
 | examples        | Map[`string`, [Example Object](#example-Object) or [Reference Object](#reference-Object)]                 | An object to hold reusable [Example Objects](#example-Object)                 |
 | securitySchemes | Map[`string`, [Security Scheme Object](#security-Scheme-Object) or [Reference Object](#reference-Object)] | An object to hold reusable [Security Scheme Objects](#security-Scheme-Object) |
-| links           | Map[`string`, [Link Object](#link-Object) or [Reference Object](#reference-Object)]                       | An object to hold reusable [Link Objects](#link-Object)                       |
 
 This object MAY be extended with [Specification Extensions](#specification-Extensions).
 
@@ -459,24 +465,10 @@ my.org.User
 
 ##### Components Object Example
 
-*****FIXME*****: Adopt Components Object Example
-
 ```json
 {
     "components": {
         "schemas": {
-            "GeneralError": {
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "message": {
-                        "type": "string"
-                    }
-                }
-            },
             "Category": {
                 "type": "object",
                 "properties": {
@@ -500,65 +492,153 @@ my.org.User
                         "type": "string"
                     }
                 }
+            },
+            "ShoppingCartItem": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "sku": {
+                        "type": "integer"
+                    },
+                    "quantity": {
+                        "type": "integer"
+                    }
+                }
+            },
+            "ProductItem": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "sku": {
+                        "type": "string"
+                    },
+                    "price": {
+                        "type": "numeric"
+                    },
+                    "shortDescription": {
+                        "type": "string"
+                    },
+                    "longDescription": {
+                        "type": "string"
+                    },
+                    "pictureUrl": {
+                        "type": "string",
+                        "format": "url"
+                    }
+                }
             }
         },
         "parameters": {
-            "skipParam": {
-                "name": "skip",
-                "in": "query",
-                "description": "number of items to skip",
-                "required": true,
-                "schema": {
-                    "type": "integer",
-                    "format": "int32"
-                }
+            "userId": {
+                "name": "user-id",
+                "description": "User identification uuid"
             },
-            "limitParam": {
-                "name": "limit",
-                "in": "query",
-                "description": "max records to return",
-                "required": true,
-                "schema": {
-                    "type": "integer",
-                    "format": "int32"
-                }
+            "category": {
+                "name": "category",
+                "description": "The shop category name"
+            }
+        },
+        "requests": {
+            "ShoppingCartItem": {
+                "description": "User's shopping cart item details",
+                "kwargs": {
+                    "schema": {
+                        "$ref": "#/components/schemas/ShoppingCartItem"
+                    }
+                },
+                "required": "true"
+            },
+            "ShoppingCart": {
+                "description": "User's whole shopping cart",
+                "args": {
+                    "type": "array",
+                    "items": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ShoppingCartItem"
+                        }
+                    }
+                },
+                "required": "true"
             }
         },
         "responses": {
-            "NotFound": {
-                "description": "Entity not found."
-            },
-            "IllegalInput": {
-                "description": "Illegal input for operation."
-            },
-            "GeneralError": {
-                "description": "General Error",
-                "content": {
-                    "application/json": {
+            "ProductList": {
+                "description": "Product list. Used on main page, category page or in search results",
+                "args": {
+                    "type": "array",
+                    "items": {
                         "schema": {
-                            "$ref": "#/components/schemas/GeneralError"
+                            "$ref": "#/components/schemas/ProductItem"
                         }
                     }
+                },
+                "required": "true"
+            }
+        },
+        "events": {
+            "PriceChanged": {
+                "description": "Notification when product price was changed",
+                "args": {
+                    "type": "array",
+                    "items": {
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "id": {
+                                    "type": "integer",
+                                    "format": "int64"
+                                },
+                                "sku": {
+                                    "type": "string"
+                                },
+                                "newPrice": {
+                                    "type": "numeric"
+                                }
+                            }
+                        }
+                    }
+                },
+                "kwargs": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "isUsersCartAffected": {
+                                "type": "boolean"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "errors": {
+            "NotAuthorized": {
+                "error": "wamp.error.not_authorized",
+                "description": "User issued request is not authorized to make this action"
+            }
+        },
+        "examples": {
+            "CategoryExample": {
+                "summary": "Example of site category",
+                "value": {
+                    "id": 12345,
+                    "name": "Home & Kitchen"
                 }
             }
         },
         "securitySchemes": {
-            "api_key": {
-                "type": "apiKey",
-                "name": "api_key",
-                "in": "header"
+            "wamp-cra": {
+                "type": "wamp-cra",
+                "description": "Authorization via Wamp Challenge Response Flow"
             },
-            "petstore_auth": {
-                "type": "oauth2",
-                "flows": {
-                    "implicit": {
-                        "authorizationUrl": "https://example.org/api/oauth/dialog",
-                        "scopes": {
-                            "write:pets": "modify pets in your account",
-                            "read:pets": "read your pets"
-                        }
-                    }
-                }
+            "wamp-cryptosign": {
+                "type": "wamp-cryptosign",
+                "description": "Authorization via Wamp Cryptosign Flow"
             }
         }
     }
@@ -1031,6 +1111,9 @@ Describes a single action URI component parameter.
 | name            | `string`  | **REQUIRED**. The name of the parameter. Parameter names are *case sensitive*. The `name` field MUST correspond to a template expression occurring within the action URI String. See [Uri templating](#WAMP-Uri-Templating) for further information.                                                                                                                                                         |
 | description     | `string`  | A brief description of the parameter. This could contain examples of use. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                                                                                                                                                                                                                                   |
 
+As parameters may be used only in URI, their type is always `string`. But in practice parameters may be of any type that
+can be cast to string.
+
 ##### Parameter Object Examples
 
 ```json
@@ -1439,136 +1522,6 @@ responses:
                     confirmation-success:
                         $ref: '#/components/examples/confirmation-success'
 ```
-
-#### Link Object
-
-The `Link object` represents a possible design-time link for a response. The presence of a link does not guarantee the
-caller's ability to successfully invoke it, rather it provides a known relationship and traversal mechanism between
-responses and other actions.
-
-For computing links, and providing instructions to execute them, a [runtime expression](#runtime-Expressions) is used for
-accessing values in an action and using them as parameters while invoking the linked operation.
-
-##### Fixed Fields
-
-| Field Name   | Type                                                       | Description                                                                                                                                                                                                                             |
-|--------------|------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| operationUri | `string`                                                   | An URI of existing WAS action, MUST point to an [RPC Action Object](#URI-RPC-Action-Object) or [Topic Action Object](#URI-Topic-Action-Object).                                                                                         |
-| parameters   | Map[`string`, Any or [{expression}](#runtime-Expressions)] | A map representing parameters to pass to an action as specified with `operationUri`. The key is the parameter name to be used, whereas the value can be a constant or an expression to be evaluated and passed to the linked operation. |
-| payload      | Any or [{expression}](#runtime-Expressions)                | A literal value or [{expression}](#runtime-Expressions) to use as a payload when calling the target action.                                                                                                                             |
-| description  | `string`                                                   | A description of the link. [CommonMark syntax][CommonMark syntax] MAY be used for rich text representation.                                                                                                                             |
-
-This object MAY be extended with [Specification Extensions](#specification-Extensions).
-
-##### Examples
-
-*****FIXME*****: adopt Link examples
-
-Computing a link from an RPC Action where the `$request.path.id` is used to pass a request parameter to the linked
-operation.
-
-```yaml
-paths:
-    /users/{id}:
-        parameters:
-            -   name: id
-                in: path
-                required: true
-                description: the user identifier, as userId
-                schema:
-                    type: string
-        get:
-            responses:
-                '200':
-                    description: the user being returned
-                    content:
-                        application/json:
-                            schema:
-                                type: object
-                                properties:
-                                    uuid: # the unique user id
-                                        type: string
-                                        format: uuid
-                    links:
-                        address:
-                            # the target link operationId
-                            operationId: getUserAddress
-                            parameters:
-                                # get the `id` field from the request uri parameter named `id`
-                                userId: $request.path.id
-    # the path item of the linked operation
-    /users/{userid}/address:
-        parameters:
-            -   name: userid
-                in: path
-                required: true
-                description: the user identifier, as userId
-                schema:
-                    type: string
-        # linked operation
-        get:
-            operationId: getUserAddress
-            responses:
-                '200':
-                    description: the user's address
-```
-
-When a runtime expression fails to evaluate, no parameter value is passed to the target operation.
-
-Values from the response payload can be used to drive a linked operation.
-
-```yaml
-links:
-    address:
-        operationId: getUserAddressByUUID
-        parameters:
-            # get the `uuid` field from the `uuid` field in the response body
-            userUuid: $response.body#/uuid
-```
-
-Clients follow all links at their discretion.
-Neither permissions, nor the capability to make a successful call to that link, are guaranteed
-solely by the existence of a relationship.
-
-##### Runtime Expressions
-
-Runtime expressions allow defining values based on information that will only be available within the HTTP message in an
-actual API call. This mechanism is used by [Link Objects](#link-Object).
-
-The runtime expression is defined by the following [ABNF][rfc5234] syntax
-
-```abnf
-      expression = ( "$url" / "$request." payload / "$response." payload )
-      payload = "payload" ["#" json-pointer ]
-      json-pointer    = *( "/" reference-token )
-      reference-token = *( unescaped / escaped )
-      unescaped       = %x00-2E / %x30-7D / %x7F-10FFFF
-         ; %x2F ('/') and %x7E ('~') are excluded from 'unescaped'
-      escaped         = "~" ( "0" / "1" )
-        ; representing '~' and '/', respectively
-      name = *( CHAR )
-      token = 1*tchar
-      tchar = "!" / "#" / "$" / "%" / "&" / "'" / "*" / "+" / "-" / "." /
-        "^" / "_" / "`" / "|" / "~" / DIGIT / ALPHA
-```
-
-Here, `json-pointer` is taken from [RFC6901][RFC6901], `char` from [RFC7159][RFC7159-sec7] and
-`token` from [RFC7230][RFC7230-sec3.2].
-
-The `name` identifier is case-sensitive, whereas `token` is not.
-
-The table below provides examples of runtime expressions and examples of their use in a value:
-
-##### Examples
-
-| Source Location          | example expression            | notes                                                                                                         |
-|--------------------------|-------------------------------|---------------------------------------------------------------------------------------------------------------|
-| URI parameter            | `uri.id`                      | URI parameters MUST be declared in the `parameters` section of the parent action or they cannot be evaluated. |
-| Request payload property | `$request.payload#/user/uuid` | In actions which accept payloads, references may be made to the entire or portions of the payload.            |
-| Response payload value   | `$response.payload#/status`   | In actions which return payloads, references may be made to the entire or portions of the payload.            |
-
-Runtime expressions preserve the type of the referenced value.
-Expressions can be embedded into string values by surrounding the expression with `{}` curly braces.
 
 #### Tag Object
 
@@ -2174,13 +2127,12 @@ will map to `Dog` because of the definition in the `mapping` element.
 
 Defines a security scheme that can be used by the operations.
 
-Supported schemes are HTTP authentication, an API key (either as a header, a cookie parameter or as a query parameter),
-mutual TLS (use of a client certificate), OAuth2's common flows (implicit, password, client credentials and
-authorization code) as defined in [RFC6749](https://tools.ietf.org/html/rfc6749),
-and [OpenID Connect Discovery](https://tools.ietf.org/html/draft-ietf-oauth-discovery-06).
-Please note that as of 2020, the implicit flow is about to be deprecated
-by [OAuth 2.0 Security Best Current Practice](https://tools.ietf.org/html/draft-ietf-oauth-security-topics). Recommended
-for most use case is Authorization Code Grant flow with PKCE.
+WAMP Realm may support a few security schemes alongside with the anonymous access. But the routers may restrict
+access to some WAMP URIs depending on the authorization used. Security scheme may be defined at
+[WAMP API Object](#WampAPI-Object) level which means that it applies to all actions by default. But also it can be
+specified on per action basis which overwrites default.
+
+Supported schemes are `"ticket"`, `"wamp-cra"`, `"wamp-cryptosign"`
 
 ##### Fixed Fields
 
