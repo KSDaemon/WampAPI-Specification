@@ -552,7 +552,7 @@ my.org.User
                         "$ref": "#/components/schemas/ShoppingCartItem"
                     }
                 },
-                "required": "true"
+                "required": true
             },
             "ShoppingCart": {
                 "description": "User's whole shopping cart",
@@ -564,7 +564,7 @@ my.org.User
                         }
                     }
                 },
-                "required": "true"
+                "required": true
             }
         },
         "responses": {
@@ -578,7 +578,7 @@ my.org.User
                         }
                     }
                 },
-                "required": "true"
+                "required": true
             }
         },
         "events": {
@@ -645,76 +645,122 @@ my.org.User
 }
 ```
 
-*****FIXME*****: Adopt Components Object Example
-
 ```yaml
 components:
-    schemas:
-        GeneralError:
+  schemas:
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+    ShoppingCartItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        sku:
+          type: integer
+        quantity:
+          type: integer
+    ProductItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        sku:
+          type: string
+        price:
+          type: numeric
+        shortDescription:
+          type: string
+        longDescription:
+          type: string
+        pictureUrl:
+          type: string
+          format: url
+  parameters:
+    userId:
+      name: user-id
+      description: User identification uuid
+    category:
+      name: category
+      description: The shop category name
+  requests:
+    ShoppingCartItem:
+      description: User's shopping cart item details
+      kwargs:
+        schema:
+          $ref: '#/components/schemas/ShoppingCartItem'
+      required: 'true'
+    ShoppingCart:
+      description: User's whole shopping cart
+      args:
+        type: array
+        items:
+          schema:
+            $ref: '#/components/schemas/ShoppingCartItem'
+      required: 'true'
+  responses:
+    ProductList:
+      description: Product list. Used on main page, category page or in search results
+      args:
+        type: array
+        items:
+          schema:
+            $ref: '#/components/schemas/ProductItem'
+      required: 'true'
+  events:
+    PriceChanged:
+      description: Notification when product price was changed
+      args:
+        type: array
+        items:
+          schema:
             type: object
             properties:
-                code:
-                    type: integer
-                    format: int32
-                message:
-                    type: string
-        Category:
-            type: object
-            properties:
-                id:
-                    type: integer
-                    format: int64
-                name:
-                    type: string
-        Tag:
-            type: object
-            properties:
-                id:
-                    type: integer
-                    format: int64
-                name:
-                    type: string
-    parameters:
-        skipParam:
-            name: skip
-            in: query
-            description: number of items to skip
-            required: true
-            schema:
+              id:
                 type: integer
-                format: int32
-        limitParam:
-            name: limit
-            in: query
-            description: max records to return
-            required: true
-            schema:
-                type: integer
-                format: int32
-    responses:
-        NotFound:
-            description: Entity not found.
-        IllegalInput:
-            description: Illegal input for operation.
-        GeneralError:
-            description: General Error
-            content:
-                application/json:
-                    schema:
-                        $ref: '#/components/schemas/GeneralError'
-    securitySchemes:
-        api_key:
-            type: apiKey
-            name: api_key
-            in: header
-        petstore_auth:
-            type: oauth2
-            flows:
-                implicit:
-                    authorizationUrl: https://example.org/api/oauth/dialog
-                    scopes:
-                        write:pets: modify pets in your account
-                        read:pets: read your pets
+                format: int64
+              sku:
+                type: string
+              newPrice:
+                type: numeric
+      kwargs:
+        schema:
+          type: object
+          properties:
+            isUsersCartAffected:
+              type: boolean
+  errors:
+    NotAuthorized:
+      error: wamp.error.not_authorized
+      description: User issued request is not authorized to make this action
+  examples:
+    CategoryExample:
+      summary: Example of site category
+      value:
+        id: 12345
+        name: Home & Kitchen
+  securitySchemes:
+    wamp-cra:
+      type: wamp-cra
+      description: Authorization via Wamp Challenge Response Flow
+    wamp-cryptosign:
+      type: wamp-cryptosign
+      description: Authorization via Wamp Cryptosign Flow
 ```
 
 #### URIs Object
@@ -733,18 +779,18 @@ This object MAY be extended with [Specification Extensions](#specification-Exten
 
 ##### Uri templating Matching
 
-Assuming the following uris, the concrete definition, `com.store.pets.mine`, will be matched first if used:
+Assuming the following uris, the concrete definition, `com.store.category.mine`, will be matched first if used:
 
 ```
-  com.store.pets.{petId}
-  com.store.pets.mine
+  com.store.category.{categoryId}
+  com.store.category.mine
 ```
 
 The following uris are considered identical and invalid:
 
 ```
-  com.store.pets.{petId}
-  com.store.pets.{name}
+  com.store.category.{categoryId}
+  com.store.category.{name}
 ```
 
 The following may lead to ambiguous resolution:
@@ -756,27 +802,54 @@ The following may lead to ambiguous resolution:
 
 ##### URIs Object Example
 
-*****FIXME*****: adopt URIs Object Example
-
 ```json
 {
-    "com.store.pets.get": {
-        "get": {
-            "description": "Returns all pets from the system that the user has access to",
-            "responses": {
-                "200": {
-                    "description": "A list of pets.",
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/components/schemas/pet"
-                                }
+    "uris": {
+        "com.store.category.products": {
+            "type": "rpc",
+            "summary": "Retrieve category products",
+            "description": "This RPC returns a list of products available for sale in selected category",
+            "tags": [ "shop", "products"],
+            "request": {
+                "description": "Category and filters to apply for product list",
+                "args": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    },
+                    "description": "Pass categoryId as args[0]"
+                },
+                "kwargs": {
+                    "schema": {
+                        "type": "object",
+                        "properties": {
+                            "page": {
+                                "type": "integer",
+                                "default": 1,
+                                "description": "Page number for pagination"
+                            },
+                            "limit": {
+                                "type": "integer",
+                                "default": 20,
+                                "description": "Records per page for pagination"
                             }
                         }
                     }
-                }
+                },
+                "required": true
+            },
+            "response": {
+                "$ref": "#/components/responses/ProductList"
+            },
+            "supportsProgressiveResults": true
+        },
+        "com.store.price.changes": {
+            "type": "topic",
+            "summary": "Price change notifications",
+            "description": "Subscribe to this topic to receive product price changes in realtime",
+            "tags": [ "shop", "products"],
+            "event": {
+                "$ref": "#/components/events/PriceChanged"
             }
         }
     }
@@ -784,18 +857,49 @@ The following may lead to ambiguous resolution:
 ```
 
 ```yaml
-com.store.pets.get:
-    get:
-        description: Returns all pets from the system that the user has access to
-        responses:
-            '200':
-                description: A list of pets.
-                content:
-                    application/json:
-                        schema:
-                            type: array
-                            items:
-                                $ref: '#/components/schemas/pet'
+uris:
+  com.store.category.products:
+    type: rpc
+    summary: Retrieve category products
+    description: >-
+      This RPC returns a list of products available for sale in selected
+      category
+    tags:
+      - shop
+      - products
+    request:
+      description: >-
+        Category and filters to apply for product list
+      args:
+        type: array
+        items:
+          type: integer
+        description: Pass categoryId as args[0]
+      kwargs:
+        schema:
+          type: object
+          properties:
+            page:
+              type: integer
+              default: 1
+              description: Page number for pagination
+            limit:
+              type: integer
+              default: 20
+              description: Records per page for pagination
+      required: true
+    response:
+      $ref: '#/components/responses/ProductList'
+    supportsProgressiveResults: true
+  com.store.price.changes:
+    type: topic
+    summary: Price change notifications
+    description: Subscribe to this topic to receive product price changes in realtime
+    tags:
+      - shop
+      - products
+    event:
+      $ref: '#/components/events/PriceChanged'
 ```
 
 #### URI RPC Action Object
@@ -825,121 +929,110 @@ This object MAY be extended with [Specification Extensions](#specification-Exten
 
 ##### URI RPC Action Example
 
-*****FIXME*****: adopt URI RPC Action Example
-
 ```json
 {
-    "tags": [
-        "pet"
-    ],
-    "summary": "Updates a pet in the store with form data",
-    "operationId": "updatePetWithForm",
-    "parameters": [
-        {
-            "name": "petId",
-            "in": "path",
-            "description": "ID of pet that needs to be updated",
-            "required": true,
+    "type": "rpc",
+    "summary": "Update user profile",
+    "description": "This RPC update user's profile and in case of email change send confirmation email",
+    "tags": [ "user" ],
+    "request": {
+        "description": "New user profile attributes values to set",
+        "kwargs": {
             "schema": {
-                "type": "string"
-            }
-        }
-    ],
-    "requestBody": {
-        "content": {
-            "application/x-www-form-urlencoded": {
-                "schema": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "description": "Updated name of the pet",
-                            "type": "string"
-                        },
-                        "status": {
-                            "description": "Updated status of the pet",
-                            "type": "string"
-                        }
+                "type": "object",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "format": "email"
                     },
-                    "required": [
-                        "status"
-                    ]
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "nickName": {
+                        "type": "string"
+                    },
+                    "oldPassword": {
+                        "type": "string",
+                        "format": "password"
+                    },
+                    "newPassword": {
+                        "type": "string",
+                        "format": "password"
+                    },
+                    "passwordConfirm": {
+                        "type": "string",
+                        "format": "password"
+                    }
+                }
+            }
+        },
+        "required": true
+    },
+    "response": {
+        "kwargs": {
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "confirmationSent": {
+                        "type": "boolean",
+                        "description": "If email was changed this flag is set to true meaning that notification email to new address was sent"
+                    }
                 }
             }
         }
     },
-    "responses": {
-        "200": {
-            "description": "Pet updated.",
-            "content": {
-                "application/json": {},
-                "application/xml": {}
-            }
-        },
-        "405": {
-            "description": "Method Not Allowed",
-            "content": {
-                "application/json": {},
-                "application/xml": {}
-            }
-        }
-    },
-    "security": [
-        {
-            "petstore_auth": [
-                "write:pets",
-                "read:pets"
-            ]
-        }
-    ]
+    "supportsE2EE": true
 }
 ```
 
 ```yaml
+type: rpc
+summary: Update user profile
+description: >-
+  This RPC update user's profile and in case of email change send confirmation
+  email
 tags:
-    - pet
-summary: Updates a pet in the store with form data
-operationId: updatePetWithForm
-parameters:
-    -   name: petId
-        in: path
-        description: ID of pet that needs to be updated
-        required: true
-        schema:
-            type: string
-requestBody:
-    content:
-        'application/x-www-form-urlencoded':
-            schema:
-                type: object
-                properties:
-                    name:
-                        description: Updated name of the pet
-                        type: string
-                    status:
-                        description: Updated status of the pet
-                        type: string
-                required:
-                    - status
-responses:
-    '200':
-        description: Pet updated.
-        content:
-            'application/json': { }
-            'application/xml': { }
-    '405':
-        description: Method Not Allowed
-        content:
-            'application/json': { }
-            'application/xml': { }
-security:
-    -   petstore_auth:
-            - write:pets
-            - read:pets
+  - user
+request:
+  description: New user profile attributes values to set
+  kwargs:
+    schema:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        fullName:
+          type: string
+        nickName:
+          type: string
+        oldPassword:
+          type: string
+          format: password
+        newPassword:
+          type: string
+          format: password
+        passwordConfirm:
+          type: string
+          format: password
+  required: true
+response:
+  kwargs:
+    schema:
+      type: object
+      properties:
+        confirmationSent:
+          type: boolean
+          description: >-
+            If email was changed this flag is set to true meaning that notification
+            email to new address was sent
+supportsE2EE: true
 ```
 
 #### URI Topic Action Object
 
-Describes the single WAMP Events Topic Publication/Subscription.
+Describes the single WAMP Events Topic Publication/Subscription. The documentation tools may use this information
+to provide an option to publish event to topic and to subscribe to the topic and validate the received event.
 
 ##### Fixed Fields
 
@@ -961,116 +1054,73 @@ This object MAY be extended with [Specification Extensions](#specification-Exten
 
 ##### URI Topic Action Example
 
-*****FIXME*****: adopt URI RPC Action Example
+```json
+{
+    "type": "topic",
+    "summary": "Price change notifications",
+    "description": "Subscribe to this topic to receive product price changes in realtime",
+    "tags": [ "shop", "products"],
+    "event": {
+        "$ref": "#/components/events/PriceChanged"
+    }
+}
+```
 
 ```json
 {
-    "tags": [
-        "pet"
-    ],
-    "summary": "Updates a pet in the store with form data",
-    "operationId": "updatePetWithForm",
-    "parameters": [
-        {
-            "name": "petId",
-            "in": "path",
-            "description": "ID of pet that needs to be updated",
-            "required": true,
+    "type": "topic",
+    "summary": "Channel user list change notifications",
+    "description": "Subscribe to this topic to receive updates when: new users join the chat, user is banned, user leaves and so on",
+    "tags": [ "chat" ],
+    "event": {
+        "description": "Notification when channel active users list is changed",
+        "kwargs": {
             "schema": {
-                "type": "string"
-            }
-        }
-    ],
-    "requestBody": {
-        "content": {
-            "application/x-www-form-urlencoded": {
-                "schema": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "description": "Updated name of the pet",
-                            "type": "string"
-                        },
-                        "status": {
-                            "description": "Updated status of the pet",
-                            "type": "string"
-                        }
+                "type": "object",
+                "properties": {
+                    "userAction": {
+                        "type": "string",
+                        "enum": [ "join", "ban", "leave" ]
                     },
-                    "required": [
-                        "status"
-                    ]
+                    "nickName": {
+                        "type": "string"
+                    },
+                    "avatarUrl": {
+                        "type": "string",
+                        "format": "url"
+                    }
                 }
             }
         }
-    },
-    "responses": {
-        "200": {
-            "description": "Pet updated.",
-            "content": {
-                "application/json": {},
-                "application/xml": {}
-            }
-        },
-        "405": {
-            "description": "Method Not Allowed",
-            "content": {
-                "application/json": {},
-                "application/xml": {}
-            }
-        }
-    },
-    "security": [
-        {
-            "petstore_auth": [
-                "write:pets",
-                "read:pets"
-            ]
-        }
-    ]
+    }
 }
 ```
 
 ```yaml
+type: topic
+summary: Channel user list change notifications
+description: >-
+  Subscribe to this topic to receive updates when: new users join the chat, user
+  is banned, user leaves and so on
 tags:
-    - pet
-summary: Updates a pet in the store with form data
-operationId: updatePetWithForm
-parameters:
-    -   name: petId
-        in: path
-        description: ID of pet that needs to be updated
-        required: true
-        schema:
-            type: string
-requestBody:
-    content:
-        'application/x-www-form-urlencoded':
-            schema:
-                type: object
-                properties:
-                    name:
-                        description: Updated name of the pet
-                        type: string
-                    status:
-                        description: Updated status of the pet
-                        type: string
-                required:
-                    - status
-responses:
-    '200':
-        description: Pet updated.
-        content:
-            'application/json': { }
-            'application/xml': { }
-    '405':
-        description: Method Not Allowed
-        content:
-            'application/json': { }
-            'application/xml': { }
-security:
-    -   petstore_auth:
-            - write:pets
-            - read:pets
+  - chat
+event:
+  description: Notification when channel active users list is changed
+  kwargs:
+    schema:
+      type: object
+      properties:
+        userAction:
+          type: string
+          enum:
+            - join
+            - ban
+            - leave
+        nickName:
+          type: string
+        avatarUrl:
+          type: string
+          format: url
 ```
 
 #### External Documentation Object
