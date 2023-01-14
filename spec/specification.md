@@ -1593,14 +1593,14 @@ This object MAY be extended with [Specification Extensions](#specification-Exten
 
 ```json
 {
-    "name": "pet",
-    "description": "Pets operations"
+    "name": "user",
+    "description": "User profile related actions"
 }
 ```
 
 ```yaml
-name: pet
-description: Pets operations
+name: user
+description: User profile related actions
 ```
 
 #### Reference Object
@@ -1629,36 +1629,36 @@ and [Schema Objects](#schema-Object) that contain a `$ref` keyword.
 
 ```json
 {
-    "$ref": "#/components/schemas/Pet"
+    "$ref": "#/components/schemas/Category"
 }
 ```
 
 ```yaml
-$ref: '#/components/schemas/Pet'
+$ref: '#/components/schemas/Category'
 ```
 
 ##### Relative Schema Document Example
 
 ```json
 {
-    "$ref": "Pet.json"
+    "$ref": "User.json"
 }
 ```
 
 ```yaml
-$ref: Pet.yaml
+$ref: User.yaml
 ```
 
 ##### Relative Documents With Embedded Schema Example
 
 ```json
 {
-    "$ref": "definitions.json#/Pet"
+    "$ref": "User.json#/Profile"
 }
 ```
 
 ```yaml
-$ref: definitions.yaml#/Pet
+$ref: User.yaml#/Profile
 ```
 
 #### Schema Object
